@@ -1,101 +1,81 @@
-import Image from "next/image";
+import {
+  Box, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Typography
+} from '@mui/material';
+import AnimatedPaper from './shared/common/Papers/AnimatedPaper';
+
+const fakeData = [
+  { id: 1, name: 'Producto A', price: '$20.00', stock: 15 },
+  { id: 2, name: 'Producto B', price: '$35.50', stock: 8 },
+  { id: 3, name: 'Producto C', price: '$12.99', stock: 25 },
+  { id: 4, name: 'Producto D', price: '$55.00', stock: 5 },
+  { id: 5, name: 'Producto E', price: '$99.99', stock: 2 },
+  { id: 6, name: 'Producto F', price: '$45.00', stock: 10 },
+  { id: 7, name: 'Producto G', price: '$75.25', stock: 7 },
+  { id: 8, name: 'Producto H', price: '$5.99', stock: 50 },
+  { id: 9, name: 'Producto I', price: '$150.00', stock: 3 },
+  { id: 10, name: 'Producto J', price: '$89.99', stock: 6 },
+  { id: 11, name: 'Producto K', price: '$29.99', stock: 12 },
+  { id: 12, name: 'Producto L', price: '$9.99', stock: 30 },
+  { id: 13, name: 'Producto M', price: '$60.00', stock: 9 },
+  { id: 14, name: 'Producto N', price: '$110.00', stock: 4 },
+  { id: 15, name: 'Producto O', price: '$199.99', stock: 1 },
+];
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '16px',
+        boxSizing: 'border-box',
+        position: 'fixed',
+        width: '100%',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          maxWidth: '100%',
+          gap: '20px',
+          width: '100%',
+        }}
+      >
+        <AnimatedPaper>
+          <Typography variant='h5' className='text-center text-gray-600 mt-2'>
+            Este es un ejemplo de Paper animado con MUI y TailwindCSS.
+          </Typography>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {/* Tabla dentro del Paper */}
+          <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Precio</TableCell>
+                  <TableCell>Stock</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {fakeData.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell>{row.price}</TableCell>
+                    <TableCell>{row.stock}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </AnimatedPaper>
+      </Box>
+    </Box>
   );
 }
