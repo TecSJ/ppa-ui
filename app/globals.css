@@ -1,21 +1,52 @@
-@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@font-face {
+    font-family: 'MadaniArabic-Black';
+    src: url('../public/assets/font/MadaniArabicBlack.ttf') format('truetype');
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@font-face {
+    font-family: 'MadaniArabic-Bold';
+    src: url('../public/assets/font/MadaniArabicBold.ttf') format('truetype');
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@font-face {
+    font-family: 'MadaniArabic-ExtraBold';
+    src: url('../public/assets/font/MadaniArabicExtraBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-ExtraLight';
+    src: url('../public/assets/font/MadaniArabicExtraLight.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-Light';
+    src: url('../public/assets/font/MadaniArabicLight.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-Medium';
+    src: url('../public/assets/font/MadaniArabicMedium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-Regular';
+    src: url('../public/assets/font/MadaniArabicRegular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-SemiBold';
+    src: url('../public/assets/font/MadaniArabicSemiBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabic-Thin';
+    src: url('../public/assets/font/MadaniArabicThin.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'MadaniArabicVariable';
+    src: url('../public/assets/font/MadaniArabicVariable.ttf') format('truetype');
 }
