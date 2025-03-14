@@ -34,7 +34,7 @@ export default function MainLay({ children }: MainLayoutProps) {
             marginLeft: hideSidebar ? '0' : '70px',
             transition: 'margin-left 0.3s ease',
             backgroundColor: '#f9f9f9',
-            overflow: 'auto',
+            overflow: 'hidden',
           }}
         >
           {children}

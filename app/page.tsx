@@ -1,5 +1,9 @@
+import AnimatedPaper from './shared/common/Papers/AnimatedPaper';
+
 export default function Home() {
   return (
-    <h1>Hola</h1>
+    <AnimatedPaper title='Eboy'>
+      <></>
+    </AnimatedPaper>
   );
 }
