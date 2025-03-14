@@ -1,21 +1,19 @@
 'use client';
 
-import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-quartz.css';
-import { ColDef, IRowNode } from 'ag-grid-community';
+import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { CircularProgress } from '@mui/material';
 
 interface TableTemplateProps {
   rowData: any[];
-  colDefs: ColDef[];
+  colDefs: GridColDef[];
   pageSize?: number;
   loading?: boolean;
   enableSelection?: boolean;
   selectionMode?: 'singleRow' | 'multiRow';
   // eslint-disable-next-line no-unused-vars
-  isRowSelectable?: (rowNode: IRowNode<any>) => boolean;
+  isRowSelectable?: (params: any) => boolean;
   // eslint-disable-next-line no-unused-vars
-  onSelectionChanged?: (params: any) => void;
+  onSelectionChanged?: (selectionModel: GridRowSelectionModel) => void;
   height?: number;
 }
 
@@ -29,31 +27,29 @@ export default function TableTemplate({
   isRowSelectable,
   onSelectionChanged,
   height = 635,
-}: TableTemplateProps) {
+  getRowId, // Nueva prop
+}: TableTemplateProps & { getRowId?: (row: any) => string | number }) {
   if (loading) {
     return (
-      <div style={{
-        display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh',
-      }}
-      >
-        <div>Cargando datos...</div>
+      <div className='flex justify-center items-center h-screen'>
+        <CircularProgress />
       </div>
     );
   }
 
   return (
-    <div className='ag-theme-quartz' style={{ height: height || 635, width: '100%' }}>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={colDefs}
-        pagination
-        paginationPageSize={pageSize}
-        selection={enableSelection ? {
-          mode: selectionMode,
-          isRowSelectable,
-          checkboxes: true,
-        } : undefined}
-        onSelectionChanged={enableSelection ? onSelectionChanged : undefined}
+    <div className='w-full' style={{ height: height || 635 }}>
+      <DataGrid
+        rows={rowData}
+        columns={colDefs}
+        pageSizeOptions={[pageSize]}
+        checkboxSelection={enableSelection}
+        disableRowSelectionOnClick
+        onRowSelectionModelChange={enableSelection ? onSelectionChanged : undefined}
+        isRowSelectable={isRowSelectable}
+        rowSelectionModel={selectionMode === 'singleRow' ? 'single' : 'multiple'}
+        getRowId={getRowId} // Se define dinámicamente
+        className='bg-white shadow-md rounded-lg border'
       />
     </div>
   );
