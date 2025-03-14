@@ -23,9 +23,6 @@ interface ModuloData {
 export default function TableModulos() {
   const [rowData, setRowData] = useState<ModuloData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [selectedRowsCount, setSelectedRowsCount] = useState<number>(0);
-  const [selectedRowsData, setSelectedRowsData] = useState<ModuloData[]>([]);
-  const [selectedRowData, setSelectedRowData] = useState<ModuloData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
