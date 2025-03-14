@@ -30,7 +30,6 @@ export default function AuthProvider({ children }: ProviderProps) {
   const removeAuth = useCallback(() => {
     localStorage.removeItem('authToken');
     setUser(null);
-    router.push('/');
   }, [router]);
 
   const activateAuth = useCallback((userData: any) => {

@@ -51,11 +51,17 @@ const eslintConfig = [
       react: {
         version: 'detect',
       },
-      'import/resolver': {
-        node: {
-          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        {
+          ts: 'never',
+          tsx: 'never',
+          js: 'never',
+          jsx: 'never',
+          '': 'never',
         },
-      },
+      ],
     },
   },
 ];
