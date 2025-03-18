@@ -23,7 +23,6 @@ export default function TableTemplate({
   pageSize = 20,
   loading = false,
   enableSelection = false,
-  selectionMode = 'multiRow',
   isRowSelectable,
   onSelectionChanged,
   height = 635,
@@ -54,7 +53,7 @@ export default function TableTemplate({
           ...col,
           flex: 1,
           minWidth: 100,
-        }))}z
+        }))}
         pageSizeOptions={[pageSize]}
         checkboxSelection={enableSelection}
         disableRowSelectionOnClick
