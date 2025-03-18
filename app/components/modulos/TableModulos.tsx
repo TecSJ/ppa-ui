@@ -40,7 +40,8 @@ export default function TableModulos() {
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedRow(selection);
-    console.log('Selected Rows:', selection);
+    const selectedData = rowData.filter((row) => selection.includes(row.clave));
+    console.log('Filas seleccionadas:', selectedData);
   };
 
   const colDefs: GridColDef[] = [
@@ -63,7 +64,6 @@ export default function TableModulos() {
         colDefs={colDefs}
         pageSize={20}
         loading={loading}
-        selectionMode='multiRow'
         enableSelection
         onSelectionChanged={handleSelectionChange}
         getRowId={(row) => row.clave}

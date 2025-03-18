@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRowSelectionModel, GridPaginationModel } from '@mui/x-data-grid';
+import { esES } from '@mui/x-data-grid/locales';
 import { CircularProgress } from '@mui/material';
 
 interface TableTemplateProps {
@@ -10,7 +11,6 @@ interface TableTemplateProps {
   pageSize?: number;
   loading?: boolean;
   enableSelection?: boolean;
-  selectionMode?: 'singleRow' | 'multiRow';
   isRowSelectable?: (params: any) => boolean;
   onSelectionChanged?: (selectionModel: GridRowSelectionModel) => void;
   height?: number;
@@ -29,6 +29,10 @@ export default function TableTemplate({
   getRowId,
 }: TableTemplateProps) {
   const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize,
+  });
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedRows(selection);
@@ -54,7 +58,10 @@ export default function TableTemplate({
           flex: 1,
           minWidth: 100,
         }))}
-        pageSizeOptions={[pageSize]}
+        pagination
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 20, 50, 100]}
         checkboxSelection={enableSelection}
         disableRowSelectionOnClick
         rowSelectionModel={selectedRows}
@@ -62,6 +69,7 @@ export default function TableTemplate({
         isRowSelectable={isRowSelectable}
         getRowId={getRowId}
         className='bg-white shadow-md rounded-lg border'
+        localeText={esES.components.MuiDataGrid.defaultProps.localeText}
       />
     </div>
   );
