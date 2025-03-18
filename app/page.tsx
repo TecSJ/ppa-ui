@@ -1,8 +1,8 @@
-import AnimatedPaper from './shared/common/Papers/AnimatedPaper';
+import { AnimatedPaper } from '@/app/shared/common';
 
 export default function Home() {
   return (
-    <AnimatedPaper title='Eboy'>
+    <AnimatedPaper title='Hola'>
       <></>
     </AnimatedPaper>
   );
