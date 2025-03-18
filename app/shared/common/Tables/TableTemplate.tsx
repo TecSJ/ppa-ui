@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { CircularProgress } from '@mui/material';
 
@@ -10,11 +11,10 @@ interface TableTemplateProps {
   loading?: boolean;
   enableSelection?: boolean;
   selectionMode?: 'singleRow' | 'multiRow';
-  // eslint-disable-next-line no-unused-vars
   isRowSelectable?: (params: any) => boolean;
-  // eslint-disable-next-line no-unused-vars
   onSelectionChanged?: (selectionModel: GridRowSelectionModel) => void;
   height?: number;
+  getRowId?: (row: any) => string | number;
 }
 
 export default function TableTemplate({
@@ -27,8 +27,17 @@ export default function TableTemplate({
   isRowSelectable,
   onSelectionChanged,
   height = 635,
-  getRowId, // Nueva prop
-}: TableTemplateProps & { getRowId?: (row: any) => string | number }) {
+  getRowId,
+}: TableTemplateProps) {
+  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedRows(selection);
+    if (onSelectionChanged) {
+      onSelectionChanged(selection);
+    }
+  };
+
   if (loading) {
     return (
       <div className='flex justify-center items-center h-screen'>
@@ -38,17 +47,21 @@ export default function TableTemplate({
   }
 
   return (
-    <div className='w-full' style={{ height: height || 635 }}>
+    <div className='w-full' style={{ height }}>
       <DataGrid
         rows={rowData}
-        columns={colDefs}
+        columns={colDefs.map((col) => ({
+          ...col,
+          flex: 1,
+          minWidth: 100,
+        }))}z
         pageSizeOptions={[pageSize]}
         checkboxSelection={enableSelection}
         disableRowSelectionOnClick
-        onRowSelectionModelChange={enableSelection ? onSelectionChanged : undefined}
+        rowSelectionModel={selectedRows}
+        onRowSelectionModelChange={enableSelection ? handleSelectionChange : undefined}
         isRowSelectable={isRowSelectable}
-        rowSelectionModel={selectionMode === 'singleRow' ? 'single' : 'multiple'}
-        getRowId={getRowId} // Se define dinámicamente
+        getRowId={getRowId}
         className='bg-white shadow-md rounded-lg border'
       />
     </div>
