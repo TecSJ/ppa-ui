@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { getData } from '@/app/shared/utils/apiUtils';
 import { TableTemplate, ActionButtons } from '@/app/shared/common/';
+import ModalAgregar from '@/app/shared/common/Modals/ppa/modaladd'; // Adjust the path as necessary
 
 interface ModuloData {
   clave: string;
@@ -22,13 +23,21 @@ export default function TableModulos() {
   const [rowData, setRowData] = useState<ModuloData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedRow, setSelectedRow] = useState<GridRowSelectionModel>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         console.log('Fetching data...');
         const { data } = await getData({ endpoint: '/modulos' });
-        setRowData(data);
+        const transformedData = data.map((modulo: any) => ({
+          ...modulo,
+          planDeEstudio: modulo.plan?.planDeEstudio || '',
+          idPrograma: modulo.plan?.idPrograma || '',
+          carrera: modulo.plan?.programa?.carrera || '',
+          unidadAcademica: modulo.plan?.programa?.unidadAcademica || '',
+        }));
+        setRowData(transformedData);
         setLoading(false);
       } catch (error) {
         console.log('Error fetching data:', error);
@@ -46,6 +55,9 @@ export default function TableModulos() {
 
   const handleButtonClick = (actionType: string) => {
     console.log(`Acción seleccionada: ${actionType}`);
+    if (actionType === 'Agregar') {
+      setIsModalOpen(true);
+    }
   };
 
   const colDefs: GridColDef[] = [
@@ -64,7 +76,7 @@ export default function TableModulos() {
   return (
     <div>
       <ActionButtons
-        tableType='aplicaciones'
+        tableType='modulos'
         selectedRowsCount={selectedRow.length}
         onButtonClick={handleButtonClick}
       />
@@ -76,6 +88,19 @@ export default function TableModulos() {
         enableSelection
         onSelectionChanged={handleSelectionChange}
         getRowId={(row) => row.clave}
+      />
+      <ModalAgregar
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        fields={[
+          { name: 'clave', label: 'Clave', type: 'text' },
+          { name: 'abreviatura', label: 'Abreviatura', type: 'text' },
+          { name: 'nombre', label: 'Nombre', type: 'text' },
+          { name: 'creditos', label: 'Créditos', type: 'text' },
+          { name: 'tipo', label: 'Tipo', type: 'select', options:
+            ['Teoría', 'Práctica', 'Teórico-Práctico'] },
+          { name: 'estado', label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] },
+        ]}
       />
     </div>
   );
