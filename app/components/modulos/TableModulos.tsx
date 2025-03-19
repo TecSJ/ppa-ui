@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { getData } from '@/app/shared/utils/apiUtils';
-import { TableTemplate } from '@/app/shared/common/';
+import { TableTemplate, ActionButtons } from '@/app/shared/common/';
 
 interface ModuloData {
   clave: string;
@@ -27,7 +27,7 @@ export default function TableModulos() {
     const fetchData = async () => {
       try {
         console.log('Fetching data...');
-        const { data } = await getData({ endpoint: '/modulos/fa' });
+        const { data } = await getData({ endpoint: '/modulos' });
         setRowData(data);
         setLoading(false);
       } catch (error) {
@@ -42,6 +42,10 @@ export default function TableModulos() {
     setSelectedRow(selection);
     const selectedData = rowData.filter((row) => selection.includes(row.clave));
     console.log('Filas seleccionadas:', selectedData);
+  };
+
+  const handleButtonClick = (actionType: string) => {
+    console.log(`Acción seleccionada: ${actionType}`);
   };
 
   const colDefs: GridColDef[] = [
@@ -59,6 +63,11 @@ export default function TableModulos() {
 
   return (
     <div>
+      <ActionButtons
+        tableType='aplicaciones'
+        selectedRowsCount={selectedRow.length}
+        onButtonClick={handleButtonClick}
+      />
       <TableTemplate
         rowData={rowData}
         colDefs={colDefs}
