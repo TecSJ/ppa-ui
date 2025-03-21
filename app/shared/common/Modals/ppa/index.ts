@@ -1,1 +1,1 @@
-export { default as modaladd } from './modaladd';
+export { default as modaladd } from './modalAdd';

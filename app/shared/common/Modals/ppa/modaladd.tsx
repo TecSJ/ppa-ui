@@ -1,27 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { DefaultModal } from '../';
 import { InputField, SelectField } from '../../form';
+import { Grid, Button, SelectChangeEvent } from '@mui/material';
+import { Add, Close, Edit } from '@mui/icons-material';
 
-interface ModalAgregarProps {
-  open: boolean;
-  onClose: () => void;
-  fields: { name: string; label: string; type: 'text' | 'select'; options?: string[] }[];
+interface FieldProps {
+  name: string;
+  label: string;
+  type: 'text' | 'select';
+  options?: string[];
+  size?: number;
 }
 
-const ModalAgregar: React.FC<ModalAgregarProps> = ({ open, onClose, fields }) => {
-  const [formData, setFormData] = useState<{ [key: string]: string }>({});
+interface ModalAgregarProps {
+  title: string;
+  open: boolean;
+  onClose: () => void;
+  fields: FieldProps[];
+  mode: 'Agregar' | 'Editar' | 'Consultar';
+  initialValues?: { [key: string]: string };
+}
+
+const ModalAgregar: React.FC<ModalAgregarProps> = ({
+  title,
+  open,
+  onClose,
+  fields,
+  mode,
+  initialValues = {},
+}) => {
+  const initialValuesString = JSON.stringify(initialValues);
+  const memoizedInitialValues = useMemo(
+    () => JSON.parse(initialValuesString),
+    [initialValuesString]
+  );
+
+  const [formData, setFormData] = useState<{ [key: string]: string }>(
+    mode === 'Editar' || mode === 'Consultar' ? memoizedInitialValues : {}
+  );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    if (open) {
+      setFormData(mode === 'Editar' || mode === 'Consultar' ? memoizedInitialValues : {});
+      setErrors({});
+    }
+  }, [open, mode, memoizedInitialValues]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (value) {
+      setErrors((preconsultarrors) => {
+        const newErrors = { ...preconsultarrors };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (value) {
+      setErrors((preconsultarrors) => {
+        const newErrors = { ...preconsultarrors };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleClose = () => {
+    onClose();
+    setErrors({});
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validationErrors: { [key: string]: string } = {};
+    if (mode === 'Consultar') return;
 
+    const validationErrors: { [key: string]: string } = {};
     fields.forEach(({ name }) => {
-      if (!formData[name]) validationErrors[name] = 'Este campo es obligatorio.';
+      if (!formData[name]) validationErrors[name] = 'Campo obligatorio.';
     });
 
     if (Object.keys(validationErrors).length > 0) {
@@ -34,29 +97,81 @@ const ModalAgregar: React.FC<ModalAgregarProps> = ({ open, onClose, fields }) =>
   };
 
   return (
-    <DefaultModal open={open} onClose={onClose} title='Agregar Nuevo Registro'>
-      <form onSubmit={handleSubmit} className='space-y-4'>
-        {fields.map(({ name, label, type, options }) =>
-          type === 'text' ? (
-            <InputField key={name} label={label} name={name} value={
-              formData[name] || ''} onChange={handleChange} error={errors[name]} />
-          ) : (
-            <SelectField key={name} label={label} name={name} value={
-              formData[name] || ''} options={options || []} onChange={
-              handleChange} error={errors[name]} />
-          )
-        )}
+    <DefaultModal open={open} onClose={onClose} title={title}>
+      <form onSubmit={handleSubmit}>
+        <Grid container spacing={2}>
+          {fields.map(({ name, label, type, options, size }) => (
+            <Grid
+              item
+              xs={12}
+              sm={size === 1 ? 12 : size === 3 ? 4 : 6}
+              md={size === 1 ? 12 : size === 3 ? 4 : 6}
+              key={name}
+            >
+              {type === 'text' ? (
+                <InputField
+                  label={label}
+                  name={name}
+                  value={formData[name] || ''}
+                  onChange={handleChange}
+                  error={!!errors[name]}
+                  helperText={errors[name] || ''}
+                  disabled={mode === 'Consultar'}
+                />
+              ) : (
+                <SelectField
+                  label={label}
+                  name={name}
+                  value={formData[name] || ''}
+                  options={options || []}
+                  onChange={handleSelectChange}
+                  error={!!errors[name]}
+                  helperText={errors[name] || ''}
+                  disabled={mode === 'Consultar'}
+                />
+              )}
+            </Grid>
+          ))}
+        </Grid>
 
-        <div className='flex justify-end'>
-          <button type='button' onClick={onClose}
-            className='bg-gray-500 text-white px-4 py-2 rounded-md mr-2'>
-            Cancelar
-          </button>
-          <button type='submit' className=
-            'bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700'>
-            Enviar
-          </button>
-        </div>
+        <Grid container justifyContent='flex-end' spacing={2} sx={{ mt: 2 }}>
+          <Grid item>
+            <Button
+              variant='contained'
+              onClick={handleClose}
+              startIcon={<Close />}
+              sx={{
+                py: 1,
+                px: 3,
+                textTransform: 'capitalize',
+                borderRadius: '8px',
+                backgroundColor: 'rgb(255, 77, 99)',
+                '&:hoconsultar': { backgroundColor: 'rgb(200, 50, 70)' },
+                fontSize: '0.875rem',
+              }}
+            >
+              Cerrar
+            </Button>
+            {mode !== 'Consultar' && (
+              <Button
+                variant='contained'
+                type='submit'
+                startIcon={mode === 'Editar' ? <Edit /> : <Add />}
+                sx={{
+                  py: 1,
+                  px: 3,
+                  textTransform: 'capitalize',
+                  borderRadius: '8px',
+                  backgroundColor: mode === 'Editar' ? '#FF9800' : '#32169b',
+                  '&:hoconsultar': { backgroundColor: mode === 'Editar' ? '#E68900' : '#14005E' },
+                  fontSize: '0.875rem',
+                }}
+              >
+                {mode === 'Editar' ? 'Guardar cambios' : 'Guardar'}
+              </Button>
+            )}
+          </Grid>
+        </Grid>
       </form>
     </DefaultModal>
   );

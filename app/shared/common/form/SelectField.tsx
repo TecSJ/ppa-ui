@@ -1,3 +1,11 @@
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  FormHelperText,
+} from '@mui/material';
 import React from 'react';
 
 interface SelectFieldProps {
@@ -5,26 +13,38 @@ interface SelectFieldProps {
   name: string;
   value: string;
   options: string[];
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  error?: string;
+  onChange: (e: SelectChangeEvent<string>) => void;
+  error?: boolean;
+  helperText?: string;
+  fullWidth?: boolean;
+  disabled?: boolean; // Para modo "observar"
+  size?: 'small' | 'medium'; // Tamaño opcional
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
-  label, name, value, options, onChange, error }) => {
+  label,
+  name,
+  value,
+  options,
+  onChange,
+  error = false,
+  helperText = '',
+  fullWidth = true,
+  disabled = false,
+  size = 'medium',
+}) => {
   return (
-    <div className='mb-4'>
-      <label className='block text-gray-700 font-bold'>{label}</label>
-      <select name={name} value={value} onChange={
-        onChange} className='w-full p-2 border rounded-md'>
-        <option value=''>Seleccione</option>
-        {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
+    <FormControl fullWidth={fullWidth} variant='outlined' error={error} size={size}>
+      <InputLabel>{label}</InputLabel>
+      <Select name={name} value={value} onChange={onChange} label={label} disabled={disabled}>
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
         ))}
-      </select>
-      {error && <p className='text-red-500 text-sm'>{error}</p>}
-    </div>
+      </Select>
+      {error && <FormHelperText>{helperText}</FormHelperText>}
+    </FormControl>
   );
 };
 
