@@ -17,7 +17,6 @@ interface ModuloData {
   carrera?: string;
   planDeEstudio?: string;
   estado?: string;
-  idPrograma?: string;
 }
 
 interface FieldProps {
@@ -26,7 +25,7 @@ interface FieldProps {
   type: 'text' | 'select';
   size?: number;
   options?: string[];
-  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange?: (value: string) => void;
 }
 
 export default function TableModulos() {
@@ -36,39 +35,24 @@ export default function TableModulos() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
   const [selectedRowData, setSelectedRowData] = useState<ModuloData | null>(null);
-  
-  // Estado para gestionar las opciones filtradas y seleccionadas
-  const [unidadAcademica, setUnidadAcademica] = useState<string>('');
-  const [carrera, setCarrera] = useState<string>('');
-  const [planDeEstudio, setPlanDeEstudio] = useState<string>('');
-
-  // Opciones dinámicas
   const [unidadAcademicaOptions, setUnidadAcademicaOptions] = useState<string[]>([]);
   const [carreraOptions, setCarreraOptions] = useState<string[]>([]);
   const [planDeEstudioOptions, setPlanDeEstudioOptions] = useState<string[]>([]);
+  const [programas, setProgramas] = useState<any[]>([]);
+  const [planes, setPlanes] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await getData({ endpoint: '/modulos' });
-        const unidades: { idPlantel: string }[] =
-        (await getData({ endpoint: '/programa/fa' })).data;
-        const carreras: { abreviatura: string, idPlantel: string }[] =
-        (await getData({ endpoint: '/programa/fa' })).data;
-        const planes: { clave: string, idPrograma: string, carrera: string,
-          idPlantel: string }[] = (await getData({ endpoint: '/planes/' })).data;
+        const programasData = (await getData({ endpoint: '/programa/fa' })).data;
+        const planesData = (await getData({ endpoint: '/planes/' })).data;
 
-        const unidadIds = unidades.map((item: { idPlantel: string }) => item.idPlantel);
+        setProgramas(programasData);
+        setPlanes(planesData);
+
+        const unidadIds = programasData.map((item: any) => item.idPlantel) as string[];
         setUnidadAcademicaOptions([...new Set(unidadIds)]);
-
-        // Filtrar carreras según unidad académica seleccionada
-        const filteredCarreras = carreras.filter(item => item.idPlantel === unidadAcademica);
-        setCarreraOptions(filteredCarreras.map(item => item.abreviatura));
-
-        // Filtrar planes de estudio según unidad académica y carrera
-        const filteredPlanes = planes.filter(item =>
-          item.idPlantel === unidadAcademica && item.carrera === carrera);
-        setPlanDeEstudioOptions(filteredPlanes.map(item => item.clave));
 
         const transformedData = data.map((modulo: any) => ({
           ...modulo,
@@ -85,7 +69,7 @@ export default function TableModulos() {
       }
     };
     fetchData();
-  }, [unidadAcademica, carrera]);
+  }, []);
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedRow(selection);
@@ -94,17 +78,6 @@ export default function TableModulos() {
       setSelectedRowData(selectedData);
     }
     console.log('Filas seleccionadas:', selectedData);
-  };
-
-  const handleUnidadAcademicaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setUnidadAcademica(event.target.value);
-    setCarrera('');
-    setPlanDeEstudio('');
-  };
-
-  const handleCarreraChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCarrera(event.target.value);
-    setPlanDeEstudio('');
   };
 
   const handleButtonClick = (actionType: string) => {
@@ -120,6 +93,23 @@ export default function TableModulos() {
       setModalMode('Consultar');
       setIsModalOpen(true);
     }
+  };
+
+  const handleUnidadAcademicaChange = (value: string) => {
+    const carrerasFiltradas = programas
+      .filter((programa) => programa.idPlantel === value)
+      .map((programa) => programa.abreviatura);
+    setCarreraOptions([...new Set(carrerasFiltradas)]);
+    setPlanDeEstudioOptions([]);
+  };
+
+  const handleCarreraChange = (value: string) => {
+    const programasFiltrados = programas.filter((programa) => programa.abreviatura === value);
+    const planesFiltrados = planes
+      .filter((plan) => programasFiltrados.some(
+        (programa) => programa.idPrograma === plan.idPrograma))
+      .map((plan) => plan.clave);
+    setPlanDeEstudioOptions([...new Set(planesFiltrados)]);
   };
 
   const colDefs: GridColDef[] = [
@@ -142,12 +132,26 @@ export default function TableModulos() {
     { name: 'creditos', label: 'Créditos', type: 'text' },
     { name: 'asignaturas', label: 'Asignaturas', type: 'text' },
     { name: 'tipo', label: 'Tipo', type: 'select', options: ['Base', 'Especialidad'] },
-    { name: 'unidadAcademica', label: 'Unidad Académica', type: 'select',
-      options: unidadAcademicaOptions, onChange: handleUnidadAcademicaChange },
-    { name: 'carrera', label: 'Carrera', type: 'select',
-      options: carreraOptions, onChange: handleCarreraChange },
-    { name: 'planDeEstudio', label: 'Plan de estudios', type: 'select',
-      options: planDeEstudioOptions },
+    {
+      name: 'unidadAcademica',
+      label: 'Unidad Académica',
+      type: 'select',
+      options: unidadAcademicaOptions,
+      onChange: (value) => handleUnidadAcademicaChange(value),
+    },
+    {
+      name: 'carrera',
+      label: 'Carrera',
+      type: 'select',
+      options: carreraOptions,
+      onChange: (value) => handleCarreraChange(value),
+    },
+    {
+      name: 'planDeEstudio',
+      label: 'Plan de estudios',
+      type: 'select',
+      options: planDeEstudioOptions,
+    },
   ];
 
   return (

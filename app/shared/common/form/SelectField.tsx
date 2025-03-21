@@ -13,12 +13,12 @@ interface SelectFieldProps {
   name: string;
   value: string;
   options: string[];
-  onChange: (e: SelectChangeEvent<string>) => void;
+  onChange: (value: string) => void;
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
-  disabled?: boolean; // Para modo "observar"
-  size?: 'small' | 'medium'; // Tamaño opcional
+  disabled?: boolean;
+  size?: 'small' | 'medium';
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -33,10 +33,20 @@ const SelectField: React.FC<SelectFieldProps> = ({
   disabled = false,
   size = 'medium',
 }) => {
+  const handleChange = (e: SelectChangeEvent<string>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <FormControl fullWidth={fullWidth} variant='outlined' error={error} size={size}>
       <InputLabel>{label}</InputLabel>
-      <Select name={name} value={value} onChange={onChange} label={label} disabled={disabled}>
+      <Select
+        name={name}
+        value={value}
+        onChange={handleChange}
+        label={label}
+        disabled={disabled}
+      >
         {options.map((option) => (
           <MenuItem key={option} value={option}>
             {option}

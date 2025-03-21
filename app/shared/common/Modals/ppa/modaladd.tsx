@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DefaultModal } from '../';
 import { InputField, SelectField } from '../../form';
-import { Grid, Button, SelectChangeEvent } from '@mui/material';
+import { Grid, Button } from '@mui/material';
 import { Add, Close, Edit } from '@mui/icons-material';
 
 interface FieldProps {
@@ -10,6 +10,7 @@ interface FieldProps {
   type: 'text' | 'select';
   options?: string[];
   size?: number;
+  onChange?: (value: string) => void;
 }
 
 interface ModalAgregarProps {
@@ -52,24 +53,29 @@ const ModalAgregar: React.FC<ModalAgregarProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (value) {
-      setErrors((preconsultarrors) => {
-        const newErrors = { ...preconsultarrors };
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
         delete newErrors[name];
         return newErrors;
       });
     }
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (value) {
-      setErrors((preconsultarrors) => {
-        const newErrors = { ...preconsultarrors };
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
         delete newErrors[name];
         return newErrors;
       });
+    }
+
+    // Ejecutar onChange personalizado si existe
+    const field = fields.find((f) => f.name === name);
+    if (field?.onChange) {
+      field.onChange(value);
     }
   };
 
@@ -124,8 +130,7 @@ const ModalAgregar: React.FC<ModalAgregarProps> = ({
                   name={name}
                   value={formData[name] || ''}
                   options={options || []}
-                  onChange={handleSelectChange}
-                  error={!!errors[name]}
+                  onChange={(value) => handleSelectChange(name, value)}
                   helperText={errors[name] || ''}
                   disabled={mode === 'Consultar'}
                 />
@@ -146,7 +151,7 @@ const ModalAgregar: React.FC<ModalAgregarProps> = ({
                 textTransform: 'capitalize',
                 borderRadius: '8px',
                 backgroundColor: 'rgb(255, 77, 99)',
-                '&:hoconsultar': { backgroundColor: 'rgb(200, 50, 70)' },
+                '&:hover': { backgroundColor: 'rgb(200, 50, 70)' },
                 fontSize: '0.875rem',
               }}
             >
@@ -163,7 +168,7 @@ const ModalAgregar: React.FC<ModalAgregarProps> = ({
                   textTransform: 'capitalize',
                   borderRadius: '8px',
                   backgroundColor: mode === 'Editar' ? '#FF9800' : '#32169b',
-                  '&:hoconsultar': { backgroundColor: mode === 'Editar' ? '#E68900' : '#14005E' },
+                  '&:hover': { backgroundColor: mode === 'Editar' ? '#E68900' : '#14005E' },
                   fontSize: '0.875rem',
                 }}
               >
