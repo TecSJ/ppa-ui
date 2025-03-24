@@ -36,8 +36,8 @@ export default function DefaultModal({ open, onClose, title, children }: Default
         animate={open ? 'visible' : 'hidden'}
         exit='exit'
         style={{
-          width: '50%',
-          maxWidth: '900px',
+          width: '80%',
+          maxWidth: '1000px',
           backgroundColor: 'white',
           borderRadius: '12px',
           boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
