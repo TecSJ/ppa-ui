@@ -45,6 +45,7 @@ export default function ModalAdd({
     const values = initialValues || {};
     setFormData(JSON.parse(JSON.stringify(values)));
     setErrors({});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

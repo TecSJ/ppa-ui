@@ -48,7 +48,7 @@ export default function DefaultModal({ open, onClose, title, children }: Default
           id='modal-title'
           variant='h4'
           component='h2'
-          sx={{ color: '#32169b', textAlign: 'initial' }}
+          sx={{ color: '#32169b', textAlign: 'initial', userSelect: 'none' }}
         >
           {title}
         </Typography>

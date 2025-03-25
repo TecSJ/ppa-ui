@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import { getData, createRecord, updateRecord } from '@/app/shared/utils/apiUtils';
-import { DataTable, ActionButtons, ModalAdd } from '@/app/shared/common';
+import { DataTable, ActionButtons, ModalAdd, ModalStatus } from '@/app/shared/common';
 import { useAuthContext } from '@/app/context/AuthContext';
 
 interface PlanData {
@@ -39,6 +39,8 @@ export default function TablePlanes() {
   const [selectedRowData, setSelectedRowData] = useState<PlanData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Actualizar'>('Agregar');
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusToApply, setStatusToApply] = useState('');
 
   const [unidadAcademicaOptions, setUnidadAcademicaOptions] = useState<string[]>([]);
   const [carreraOptions, setCarreraOptions] = useState<(
@@ -48,6 +50,7 @@ export default function TablePlanes() {
 
   useEffect(() => {
     fetchPlanes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPlanes = async () => {
@@ -139,6 +142,8 @@ export default function TablePlanes() {
       if (updated) setSelectedRowData(updated);
 
       setIsModalOpen(false);
+      setSelectedRow([]);
+      setSelectedRowData(null);
       setNoti({
         open: true,
         type: 'success',
@@ -161,6 +166,12 @@ export default function TablePlanes() {
   }, [selectedRowData]);
 
   const handleButtonClick = async (action: string) => {
+    if (['Validar', 'Autorizar', 'Publicar', 'Cancelar'].includes(action)) {
+      setStatusToApply(action);
+      setIsStatusModalOpen(true);
+      return;
+    }
+
     setModalMode(action as any);
 
     if ((action === 'Actualizar' || action === 'Consultar') && selectedRow.length === 0) {
@@ -197,6 +208,32 @@ export default function TablePlanes() {
       .map((p) => ({ label: p.nombre, value: p.idPrograma }));
 
     setCarreraOptions(carrerasFiltradas);
+  };
+
+  const handleStatusSubmit = async () => {
+    const estadoMap: Record<string, string> = {
+      Validar: 'Validado',
+      Autorizar: 'Autorizado',
+      Publicar: 'Publicado',
+      Cancelar: 'Cancelado',
+    };
+
+    const nuevoEstado = estadoMap[statusToApply] || statusToApply;
+
+    const updates = selectedRow.map((id) =>
+      updateRecord({ endpoint: `/planes/${id}`, data: { estado: nuevoEstado } })
+    );
+
+    await Promise.all(updates);
+    await fetchPlanes();
+    setSelectedRow([]);
+    setSelectedRowData(null);
+    setNoti({
+      open: true,
+      type: 'success',
+      message: `¡Planes ${nuevoEstado.toLowerCase()}s con éxito!`,
+    });
+    setIsStatusModalOpen(false);
   };
 
   const colDefs: GridColDef[] = [
@@ -254,6 +291,7 @@ export default function TablePlanes() {
         enableSelection
         onSelectionChanged={handleSelectionChange}
         getRowId={(row) => row.idPlan}
+        rowSelectionModel={selectedRow}
       />
       <ModalAdd
         open={isModalOpen}
@@ -262,13 +300,15 @@ export default function TablePlanes() {
         fields={fields}
         mode={modalMode}
         initialValues={memoizedInitialValues}
-        onSubmit={
-          modalMode === 'Agregar'
-            ? handleCreate
-            : modalMode === 'Actualizar'
-              ? handleUpdate
-              : undefined
-        }
+        onSubmit={modalMode === 'Agregar'
+          ? handleCreate : modalMode === 'Actualizar' ? handleUpdate : undefined}
+      />
+      <ModalStatus
+        open={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        selectedRows={rowData.filter((r) => selectedRow.includes(r.idPlan))}
+        nombreBoton={statusToApply as any}
+        onSubmit={handleStatusSubmit}
       />
     </>
   );

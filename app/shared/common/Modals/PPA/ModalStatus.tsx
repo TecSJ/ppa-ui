@@ -2,19 +2,17 @@
 
 import { useState } from 'react';
 import { Button } from '@mui/material';
+import { Close, Edit } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
-import { updateRecord } from '@/app/shared/utils/apiUtils';
-import { DataTable } from '@/app/shared/common/Tables';
+import { DataTable } from '../../Tables';
 import { DefaultModal } from '../';
 
 interface ModalStatusProps {
   open: boolean;
   onClose: () => void;
   selectedRows: any[];
-  nombreBoton: string;
-  fetchPlanes: () => Promise<void>;
-  // eslint-disable-next-line no-unused-vars
-  setNoti: (noti: { open: boolean; type: 'success' | 'error'; message: string }) => void;
+  nombreBoton: 'Validado' | 'Autorizado' | 'Publicado' | 'Cancelado';
+  onSubmit: () => Promise<void>;
 }
 
 export default function ModalStatus({
@@ -22,8 +20,7 @@ export default function ModalStatus({
   onClose,
   selectedRows,
   nombreBoton,
-  fetchPlanes,
-  setNoti,
+  onSubmit,
 }: ModalStatusProps) {
   const [loading, setLoading] = useState(false);
 
@@ -35,32 +32,17 @@ export default function ModalStatus({
     { field: 'estado', headerName: 'Estado Actual' },
   ];
 
-  const handleSubmit = async () => {
+  const handleClick = async () => {
     setLoading(true);
-    try {
-      const updates = selectedRows.map((row) =>
-        updateRecord({ endpoint: `/planes/${row.idPlan}`, data: { estado: nombreBoton } })
-      );
-      await Promise.all(updates);
-      await fetchPlanes();
-      setNoti({
-        open: true,
-        type: 'success',
-        message: `¡Planes ${nombreBoton.toLowerCase()}s con éxito!`
-      });
-      onClose();
-    } catch (error) {
-      setNoti({ open: true, type: 'error', message:`Error al actualizar los planes: ${error}` });
-    } finally {
-      setLoading(false);
-    }
+    await onSubmit();
+    setLoading(false);
   };
 
   return (
     <DefaultModal
       open={open}
       onClose={onClose}
-      title={`¿Deseas ${nombreBoton} estos planes?`}
+      title={`¿Deseas ${nombreBoton.toLowerCase()} estos planes?`}
     >
       <DataTable
         rowData={selectedRows}
@@ -74,6 +56,7 @@ export default function ModalStatus({
           <Button
             variant='contained'
             onClick={onClose}
+            startIcon={<Close />}
             sx={{
               py: 1,
               px: 3,
@@ -89,8 +72,9 @@ export default function ModalStatus({
         <Grid>
           <Button
             variant='contained'
-            onClick={handleSubmit}
+            onClick={handleClick}
             disabled={loading}
+            startIcon={<Edit />}
             sx={{
               py: 1,
               px: 3,
@@ -100,7 +84,7 @@ export default function ModalStatus({
               '&:hover': { backgroundColor: '#00752f' },
             }}
           >
-            Confirmar
+            Guardar cambios
           </Button>
         </Grid>
       </Grid>

@@ -18,6 +18,7 @@ interface DataTableProps {
   height?: number;
   // eslint-disable-next-line no-unused-vars
   getRowId?: (row: any) => string | number;
+  rowSelectionModel?: GridRowSelectionModel;
 }
 
 export default function DataTable({
@@ -30,18 +31,15 @@ export default function DataTable({
   onSelectionChanged,
   height = 635,
   getRowId,
+  rowSelectionModel,
 }: DataTableProps) {
-  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize,
   });
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedRows(selection);
-    if (onSelectionChanged) {
-      onSelectionChanged(selection);
-    }
+    onSelectionChanged?.(selection);
   };
 
   if (loading) {
@@ -67,7 +65,7 @@ export default function DataTable({
         pageSizeOptions={[10, 20, 50, 100]}
         checkboxSelection={enableSelection}
         disableRowSelectionOnClick
-        rowSelectionModel={selectedRows}
+        rowSelectionModel={rowSelectionModel}
         onRowSelectionModelChange={enableSelection ? handleSelectionChange : undefined}
         isRowSelectable={isRowSelectable}
         getRowId={getRowId}
