@@ -1,19 +1,17 @@
 import {
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   FormHelperText,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
-import React from 'react';
 
-interface SelectFieldProps {
+interface AutocompleteFieldProps {
   label: string;
   name: string;
   value: string;
-  options: string[];
-  onChange: (value: string) => void;
+  options: (string | { label: string; value: string })[];
+  // eslint-disable-next-line no-unused-vars
+  onChange: (name: string, value: string) => void;
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
@@ -21,7 +19,7 @@ interface SelectFieldProps {
   size?: 'small' | 'medium';
 }
 
-const SelectField: React.FC<SelectFieldProps> = ({
+export default function AutocompleteField({
   label,
   name,
   value,
@@ -32,30 +30,36 @@ const SelectField: React.FC<SelectFieldProps> = ({
   fullWidth = true,
   disabled = false,
   size = 'medium',
-}) => {
-  const handleChange = (e: SelectChangeEvent<string>) => {
-    onChange(e.target.value);
-  };
+}: AutocompleteFieldProps) {
+  const normalizedOptions = options.map(option =>
+    typeof option === 'string' ? { label: option, value: option } : option
+  );
+
+  const currentValue = normalizedOptions.find(option => option.value === value) || null;
 
   return (
-    <FormControl fullWidth={fullWidth} variant='outlined' error={error} size={size}>
-      <InputLabel>{label}</InputLabel>
-      <Select
-        name={name}
-        value={value}
-        onChange={handleChange}
-        label={label}
+    <FormControl fullWidth={fullWidth} error={error}>
+      <Autocomplete
+        id={name}
+        options={normalizedOptions}
+        getOptionLabel={(option) => option.label}
+        value={currentValue}
+        onChange={(_, newValue) => {
+          onChange(name, newValue?.value || '');
+        }}
         disabled={disabled}
-      >
-        {options.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
-      </Select>
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            error={error}
+            size={size}
+            helperText={helperText}
+          />
+        )}
+        isOptionEqualToValue={(option, value) => option.value === value?.value}
+      />
       {error && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
   );
-};
-
-export default SelectField;
+}

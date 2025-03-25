@@ -1,11 +1,12 @@
 import { TextField } from '@mui/material';
-import React from 'react';
+import { ChangeEvent } from 'react';
 
 interface InputFieldProps {
   label: string;
   name: string;
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // eslint-disable-next-line no-unused-vars
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
@@ -13,7 +14,7 @@ interface InputFieldProps {
   size?: 'small' | 'medium';
 }
 
-const InputField: React.FC<InputFieldProps> = ({
+export default function InputField({
   label,
   name,
   value,
@@ -23,7 +24,7 @@ const InputField: React.FC<InputFieldProps> = ({
   fullWidth = true,
   disabled = false,
   size = 'medium',
-}) => {
+}: InputFieldProps) {
   return (
     <TextField
       label={label}
@@ -38,6 +39,4 @@ const InputField: React.FC<InputFieldProps> = ({
       size={size}
     />
   );
-};
-
-export default InputField;
+}

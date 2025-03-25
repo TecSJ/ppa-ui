@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo} from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
-import { getData } from '@/app/shared/utils/apiUtils';
-import { TableTemplate, ActionButtons } from '@/app/shared/common/';
-import ModalAgregar from '@/app/shared/common/Modals/ppa/modalAdd';
+import { getData, createRecord } from '@/app/shared/utils/apiUtils';
+import { TableTemplate, ActionButtons, ModalAdd } from '@/app/shared/common/';
+import { useAuthContext } from '@/app/context/AuthContext';
+import { idID } from '@mui/material/locale';
 
 interface ModuloData {
+  idModulo: number;
   clave: string;
   abreviatura: string;
   nombre: string;
@@ -24,52 +26,57 @@ interface FieldProps {
   label: string;
   type: 'text' | 'select';
   size?: number;
-  options?: string[];
+  options?: (string | { label: string; value: string })[];
+  // eslint-disable-next-line no-unused-vars
   onChange?: (value: string) => void;
 }
 
 export default function TableModulos() {
-  const [rowData, setRowData] = useState<ModuloData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { setNoti } = useAuthContext();
+
+  const [rowData, setRowData] = useState<PlanData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRow, setSelectedRow] = useState<GridRowSelectionModel>([]);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState<ModuloData | null>(null);
+  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
+
+  const [unidadSelected, setUnidadSelected] = useState<string>('');
   const [unidadAcademicaOptions, setUnidadAcademicaOptions] = useState<string[]>([]);
-  const [carreraOptions, setCarreraOptions] = useState<string[]>([]);
-  const [planDeEstudioOptions, setPlanDeEstudioOptions] = useState<string[]>([]);
+  const [carreraOptions, setCarreraOptions] = useState<(
+    string | { label: string; value: string }
+  )[]>([]);
+  const [planDeEstudioOptions, setPlanDeEstudioOptions] = useState<(
+    string | { label: string; value: string }
+  )[]>([]);
   const [programas, setProgramas] = useState<any[]>([]);
   const [planes, setPlanes] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await getData({ endpoint: '/modulos' });
-        const programasData = (await getData({ endpoint: '/programa/fa' })).data;
-        const planesData = (await getData({ endpoint: '/planes/' })).data;
-
-        setProgramas(programasData);
-        setPlanes(planesData);
-
-        const unidadIds = programasData.map((item: any) => item.idPlantel) as string[];
-        setUnidadAcademicaOptions([...new Set(unidadIds)]);
-
-        const transformedData = data.map((modulo: any) => ({
-          ...modulo,
-          planDeEstudio: modulo.plan?.planDeEstudio || '',
-          idPrograma: modulo.plan?.idPrograma || '',
-          carrera: modulo.plan?.programa?.carrera || '',
-          unidadAcademica: modulo.plan?.programa?.unidadAcademica || '',
-        }));
-        setRowData(transformedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data:modulos } = await getData({ endpoint: '/modulos' });
+      const transformedData = modulos.map((modulo: any) => ({
+        ...modulo,
+        planDeEstudio: modulo.plan?.planDeEstudio || '',
+        idPrograma: modulo.plan?.idPrograma || '',
+        carrera: modulo.plan?.programa?.carrera || '',
+        unidadAcademica: modulo.plan?.programa?.unidadAcademica || '',
+      }));
+      setRowData(transformedData);
+    } catch (error:any) {
+      setNoti({
+        open: true,
+        type: 'error',
+        message: error || 'Error al obtener los planes',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedRow(selection);
@@ -77,39 +84,142 @@ export default function TableModulos() {
     if (selectedData) {
       setSelectedRowData(selectedData);
     }
-    console.log('Filas seleccionadas:', selectedData);
   };
 
-  const handleButtonClick = (actionType: string) => {
-    console.log(`Acción seleccionada: ${actionType}`);
-    if (actionType === 'Agregar') {
-      setModalMode('Agregar');
-      setSelectedRowData(null);
-      setIsModalOpen(true);
-    } else if (actionType === 'Actualizar') {
-      setModalMode('Editar');
-      setIsModalOpen(true);
-    } else if (actionType === 'Consultar') {
-      setModalMode('Consultar');
-      setIsModalOpen(true);
+  const handleCreate = async (formData: { [key: string]: string }) => {
+    const data = {
+      ...formData,
+      idPlan: parseInt(formData.idPlan),
+      clave: formData.clave,
+      abreviatura: formData.abreviatura,
+      nombre: formData.nombre,
+      creditos: parseInt(formData.creditos),
+      asignaturas: parseInt(formData.asignaturas),
+      tipo: formData.tipo,
+      estado: 'Elaborado',
+    };
+
+    const { statusCode, errorMessage } = await createRecord({
+      endpoint: '/modulos',
+      data,
+    });
+    if (statusCode === 200 || statusCode === 201) {
+      setIsModalOpen(false);
+      await fetchData();
+      setNoti({
+        open: true,
+        type: 'success',
+        message: '¡Modulo creado con éxito!',
+      });
+    } else {
+      setNoti({
+        open: true,
+        type: 'error',
+        message: errorMessage || 'Error al crear el Modulo',
+      });
     }
   };
+  /*
+const handleUpdate = async (formData: { [key: string]: string }) => {
+    if (!selectedRowData) return;
 
-  const handleUnidadAcademicaChange = (value: string) => {
-    const carrerasFiltradas = programas
-      .filter((programa) => programa.idPlantel === value)
-      .map((programa) => programa.abreviatura);
-    setCarreraOptions([...new Set(carrerasFiltradas)]);
-    setPlanDeEstudioOptions([]);
+    const validUpdateFields = [
+      'idPrograma', 'clave', 'fechaInicio', 'fechaTermino',
+      'creditos', 'credMin', 'credMax', 'version', 'estado'
+    ];
+
+    const filteredData = Object.fromEntries(
+      Object.entries(formData)
+        .filter(([key]) => validUpdateFields.includes(key))
+        .map(([key, value]) => {
+          const numericFields = ['idPrograma', 'version', 'creditos', 'credMin', 'credMax'];
+          return [key, numericFields.includes(key) ? parseInt(value) : value];
+        })
+    );
+
+    const { statusCode, errorMessage } = await updateRecord({
+      endpoint: ⁠ /planes/${selectedRowData.idPlan} ⁠,
+      data: filteredData,
+    });
+
+    if (statusCode === 200) {
+      setIsModalOpen(false);
+      await fetchPlanes();
+      setNoti({
+        open: true,
+        type: 'success',
+        message: '¡Plan de estudio actualizado con éxito!',
+      });
+    } else {
+      setNoti({
+        open: true,
+        type: 'error',
+        message: errorMessage || 'Error al actualizar el plan',
+      });
+    }
+  };
+*/
+  const memoizedInitialValues = useMemo(() => {
+    if (!selectedRowData) return undefined;
+    return Object.fromEntries(
+      Object.entries(selectedRowData).map(([key, value]) => [key, String(value ?? '')])
+    );
+  }, [selectedRowData]);
+
+  const handleButtonClick = async (actionType: string) => {
+    setModalMode(actionType as any);
+    /*
+    if ((action === 'Actualizar' || action === 'Consultar') && selectedRow.length === 0) {
+          setNoti({
+            open: true,
+            type: 'warning',
+            message: 'Selecciona un plan para continuar.',
+          });
+          return;
+        }
+    */
+    const { data: programasData } = await getData({ endpoint: '/programa/fa' });
+    setProgramas(programasData);
+
+    const unidadOptions = programasData.map((p: any) => p.idPlantel).filter(Boolean) as string[];
+    setUnidadAcademicaOptions([...new Set(unidadOptions)]);
+
+    const { data: plantelData } = await getData({ endpoint: '/planes' });
+    setPlanes(plantelData);
+
+    if (actionType === 'Agregar') {
+      setSelectedRowData(null);
+      setCarreraOptions([]);
+      setPlanDeEstudioOptions([]);
+    } else {
+      const plantel = selectedRowData?.unidadAcademica;
+      const carrerasFiltradas = programasData
+        .filter((p: any) => p.idPlantel === plantel)
+        .map((p: any) => ({ label: p.nombre, value: p.idPrograma }));
+      setCarreraOptions(carrerasFiltradas);
+    }
+    setIsModalOpen(true);
   };
 
-  const handleCarreraChange = (value: string) => {
-    const programasFiltrados = programas.filter((programa) => programa.abreviatura === value);
+  const handleUnidadAcademicaChange = (idPlantel: string) => {
+    setPlanDeEstudioOptions([]);
+    setUnidadSelected(idPlantel);
+    const carrerasFiltradas = programas
+      .filter((p) => p.idPlantel === idPlantel)
+      .map((p) => ({ label: p.nombre, value: p.idPrograma }));
+
+    setCarreraOptions(carrerasFiltradas);
+  };
+
+  const handleCarreraChange = (carreraSeleccionada: string) => {
+    const programasFiltrados = programas
+      .filter((p) => p.idPrograma === carreraSeleccionada && p.idPlantel === unidadSelected)
+      .map((p) => p.idPrograma);
+    console.log(programasFiltrados);
     const planesFiltrados = planes
-      .filter((plan) => programasFiltrados.some(
-        (programa) => programa.idPrograma === plan.idPrograma))
-      .map((plan) => plan.clave);
-    setPlanDeEstudioOptions([...new Set(planesFiltrados)]);
+      .filter((plan) => programasFiltrados.includes(plan.idPrograma))
+      .map((plan) => ({ label: plan.clave, value: plan.idPlan }));
+    setPlanDeEstudioOptions(planesFiltrados);
   };
 
   const colDefs: GridColDef[] = [
@@ -137,14 +247,14 @@ export default function TableModulos() {
       label: 'Unidad Académica',
       type: 'select',
       options: unidadAcademicaOptions,
-      onChange: (value) => handleUnidadAcademicaChange(value),
+      onChange: handleUnidadAcademicaChange,
     },
     {
       name: 'carrera',
       label: 'Carrera',
       type: 'select',
       options: carreraOptions,
-      onChange: (value) => handleCarreraChange(value),
+      onChange: handleCarreraChange,
     },
     {
       name: 'planDeEstudio',
@@ -170,7 +280,7 @@ export default function TableModulos() {
         onSelectionChanged={handleSelectionChange}
         getRowId={(row) => row.clave}
       />
-      <ModalAgregar
+      <ModalAdd
         title={`${modalMode} Módulo`}
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
