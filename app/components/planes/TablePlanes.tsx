@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
-import { getData, createRecord } from '@/app/shared/utils/apiUtils';
+import { getData, createRecord, updateRecord } from '@/app/shared/utils/apiUtils';
 import { DataTable, ActionButtons, ModalAdd } from '@/app/shared/common';
 import { useAuthContext } from '@/app/context/AuthContext';
 
@@ -38,7 +38,7 @@ export default function TablePlanes() {
   const [selectedRow, setSelectedRow] = useState<GridRowSelectionModel>([]);
   const [selectedRowData, setSelectedRowData] = useState<PlanData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
+  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Actualizar'>('Agregar');
 
   const [unidadAcademicaOptions, setUnidadAcademicaOptions] = useState<string[]>([]);
   const [carreraOptions, setCarreraOptions] = useState<(
@@ -56,11 +56,17 @@ export default function TablePlanes() {
       const transformed = planes.map((plan: any) => ({
         ...plan,
         idPlantel: plan.programa?.idPlantel || '',
-        idPrograma: plan.programa?.nombre || '',
+        idPrograma: plan.idPrograma,
       }));
       setRowData(transformed);
-    } catch (error) {
-      console.error('Error al cargar planes:', error);
+      return transformed;
+    } catch (error: any) {
+      setNoti({
+        open: true,
+        type: 'error',
+        message: error || 'Error al obtener los planes',
+      });
+      return [];
     } finally {
       setLoading(false);
     }
@@ -105,6 +111,48 @@ export default function TablePlanes() {
     }
   };
 
+  const handleUpdate = async (formData: { [key: string]: string }) => {
+    if (!selectedRowData) return;
+
+    const validUpdateFields = [
+      'idPrograma', 'clave', 'fechaInicio', 'fechaTermino',
+      'creditos', 'credMin', 'credMax', 'version', 'estado'
+    ];
+
+    const filteredData = Object.fromEntries(
+      Object.entries(formData)
+        .filter(([key]) => validUpdateFields.includes(key))
+        .map(([key, value]) => {
+          const numericFields = ['idPrograma', 'version', 'creditos', 'credMin', 'credMax'];
+          return [key, numericFields.includes(key) ? parseInt(value) : value];
+        })
+    );
+
+    const { statusCode, errorMessage } = await updateRecord({
+      endpoint: `/planes/${selectedRowData.idPlan}`,
+      data: filteredData,
+    });
+
+    if (statusCode === 200) {
+      const updatedPlanes = await fetchPlanes();
+      const updated = updatedPlanes.find((p: any) => p.idPlan === selectedRowData.idPlan);
+      if (updated) setSelectedRowData(updated);
+
+      setIsModalOpen(false);
+      setNoti({
+        open: true,
+        type: 'success',
+        message: '¡Plan de estudio actualizado con éxito!',
+      });
+    } else {
+      setNoti({
+        open: true,
+        type: 'error',
+        message: errorMessage || 'Error al actualizar el plan',
+      });
+    }
+  };
+
   const memoizedInitialValues = useMemo(() => {
     if (!selectedRowData) return undefined;
     return Object.fromEntries(
@@ -114,14 +162,31 @@ export default function TablePlanes() {
 
   const handleButtonClick = async (action: string) => {
     setModalMode(action as any);
+
+    if ((action === 'Actualizar' || action === 'Consultar') && selectedRow.length === 0) {
+      setNoti({
+        open: true,
+        type: 'warning',
+        message: 'Selecciona un plan para continuar.',
+      });
+      return;
+    }
+
+    const { data: programasData } = await getData({ endpoint: '/programa/fa' });
+    setProgramas(programasData);
+
+    const unidadOptions = programasData.map((p: any) => p.idPlantel).filter(Boolean) as string[];
+    setUnidadAcademicaOptions([...new Set(unidadOptions)]);
+
     if (action === 'Agregar') {
       setSelectedRowData(null);
-      const { data: programasData } = await getData({ endpoint: '/programa/fa' });
-      setProgramas(programasData);
-
-      const unidadOptions = programasData.map((p: any) => p.idPlantel).filter(Boolean) as string[];
-      setUnidadAcademicaOptions([...new Set(unidadOptions)]);
       setCarreraOptions([]);
+    } else {
+      const plantel = selectedRowData?.idPlantel;
+      const carrerasFiltradas = programasData
+        .filter((p: any) => p.idPlantel === plantel)
+        .map((p: any) => ({ label: p.nombre, value: p.idPrograma }));
+      setCarreraOptions(carrerasFiltradas);
     }
     setIsModalOpen(true);
   };
@@ -143,7 +208,6 @@ export default function TablePlanes() {
     { field: 'credMin', headerName: 'Créditos Min', sortable: true },
     { field: 'credMax', headerName: 'Créditos Max', sortable: true },
     { field: 'idPlantel', headerName: 'UA', sortable: true },
-    { field: 'idPrograma', headerName: 'Carrera', sortable: true },
     { field: 'estado', headerName: 'Estado', sortable: true },
   ];
 
@@ -198,7 +262,13 @@ export default function TablePlanes() {
         fields={fields}
         mode={modalMode}
         initialValues={memoizedInitialValues}
-        onSubmit={modalMode === 'Agregar' ? handleCreate : undefined}
+        onSubmit={
+          modalMode === 'Agregar'
+            ? handleCreate
+            : modalMode === 'Actualizar'
+              ? handleUpdate
+              : undefined
+        }
       />
     </>
   );

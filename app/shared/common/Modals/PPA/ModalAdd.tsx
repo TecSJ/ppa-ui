@@ -22,7 +22,7 @@ interface ModalAgregarProps {
   open: boolean;
   onClose: () => void;
   fields: FieldProps[];
-  mode: 'Agregar' | 'Editar' | 'Consultar';
+  mode: 'Agregar' | 'Actualizar' | 'Consultar';
   initialValues?: { [key: string]: string };
   // eslint-disable-next-line no-unused-vars
   onSubmit?: (data: { [key: string]: string }) => void;
@@ -166,19 +166,19 @@ export default function ModalAdd({
               <Button
                 type='submit'
                 variant='contained'
-                startIcon={mode === 'Editar' ? <Edit /> : <Add />}
+                startIcon={mode === 'Actualizar' ? <Edit /> : <Add />}
                 sx={{
                   py: 1,
                   px: 3,
                   borderRadius: '8px',
                   textTransform: 'capitalize',
-                  backgroundColor: mode === 'Editar' ? '#FF9800' : '#32169b',
+                  backgroundColor: mode === 'Actualizar' ? '#008f39' : '#32169b',
                   '&:hover': {
-                    backgroundColor: mode === 'Editar' ? '#E68900' : '#14005E',
+                    backgroundColor: mode === 'Actualizar' ? '#008f39' : '#14005E',
                   },
                 }}
               >
-                {mode === 'Editar' ? 'Guardar cambios' : 'Guardar'}
+                {mode === 'Actualizar' ? 'Guardar cambios' : 'Guardar'}
               </Button>
             </Grid>
           )}
