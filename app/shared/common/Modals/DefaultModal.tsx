@@ -36,8 +36,8 @@ export default function DefaultModal({ open, onClose, title, children }: Default
         animate={open ? 'visible' : 'hidden'}
         exit='exit'
         style={{
-          width: '50%',
-          maxWidth: '900px',
+          width: '80%',
+          maxWidth: '1000px',
           backgroundColor: 'white',
           borderRadius: '12px',
           boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
@@ -48,7 +48,7 @@ export default function DefaultModal({ open, onClose, title, children }: Default
           id='modal-title'
           variant='h4'
           component='h2'
-          sx={{ color: '#32169b', textAlign: 'initial' }}
+          sx={{ color: '#32169b', textAlign: 'initial', userSelect: 'none' }}
         >
           {title}
         </Typography>

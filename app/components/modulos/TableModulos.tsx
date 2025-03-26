@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo} from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
-import { getData, createRecord } from '@/app/shared/utils/apiUtils';
-import { TableTemplate, ActionButtons, ModalAdd } from '@/app/shared/common/';
+import { getData, createRecord, updateRecord } from '@/app/shared/utils/apiUtils';
+import { DataTable, ActionButtons, ModalAdd, ModalStatus } from '@/app/shared/common';
 import { useAuthContext } from '@/app/context/AuthContext';
-import { idID } from '@mui/material/locale';
 
 interface ModuloData {
   idModulo: number;
@@ -15,9 +14,10 @@ interface ModuloData {
   creditos: number;
   asignaturas: number;
   tipo: string;
-  unidadAcademica?: string;
-  carrera?: string;
+  idPlantel?: string;
+  idPrograma?: string;
   planDeEstudio?: string;
+  idPlan: number;
   estado?: string;
 }
 
@@ -34,12 +34,14 @@ interface FieldProps {
 export default function TableModulos() {
   const { setNoti } = useAuthContext();
 
-  const [rowData, setRowData] = useState<PlanData[]>([]);
+  const [rowData, setRowData] = useState<ModuloData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRow, setSelectedRow] = useState<GridRowSelectionModel>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState<ModuloData | null>(null);
-  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Actualizar'>('Agregar');
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusToApply, setStatusToApply] = useState('');
 
   const [unidadSelected, setUnidadSelected] = useState<string>('');
   const [unidadAcademicaOptions, setUnidadAcademicaOptions] = useState<string[]>([]);
@@ -54,25 +56,29 @@ export default function TableModulos() {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
     try {
       const { data:modulos } = await getData({ endpoint: '/modulos' });
-      const transformedData = modulos.map((modulo: any) => ({
+      const transformed = modulos.map((modulo: any) => ({
         ...modulo,
         planDeEstudio: modulo.plan?.planDeEstudio || '',
+        idProgramas: modulo.plan?.programa?.idProgramas || '',
+        idPlantel: modulo.plan?.programa?.idPlantel || '',
+        idPlan: modulo.idPlan,
         idPrograma: modulo.plan?.idPrograma || '',
-        carrera: modulo.plan?.programa?.carrera || '',
-        unidadAcademica: modulo.plan?.programa?.unidadAcademica || '',
       }));
-      setRowData(transformedData);
+      setRowData(transformed);
+      return transformed;
     } catch (error:any) {
       setNoti({
         open: true,
         type: 'error',
-        message: error || 'Error al obtener los planes',
+        message: error || 'Error al obtener los modulos',
       });
+      return [];
     } finally {
       setLoading(false);
     }
@@ -80,10 +86,8 @@ export default function TableModulos() {
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedRow(selection);
-    const selectedData = rowData.find((row) => row.clave === selection[0]);
-    if (selectedData) {
-      setSelectedRowData(selectedData);
-    }
+    const selected = rowData.find((row) => row.idModulo === selection[0]);
+    if (selected) setSelectedRowData(selected);
   };
 
   const handleCreate = async (formData: { [key: string]: string }) => {
@@ -119,46 +123,50 @@ export default function TableModulos() {
       });
     }
   };
-  /*
-const handleUpdate = async (formData: { [key: string]: string }) => {
+
+  const handleUpdate = async (formData: { [key: string]: string }) => {
     if (!selectedRowData) return;
 
-    const validUpdateFields = [
-      'idPrograma', 'clave', 'fechaInicio', 'fechaTermino',
-      'creditos', 'credMin', 'credMax', 'version', 'estado'
+    const validupdateFields = ['idPlan', 'clave', 'abreviatura', 'nombre',
+      'creditos', 'asignaturas', 'tipo', 'estado'
     ];
 
-    const filteredData = Object.fromEntries(
+    const filterData = Object.fromEntries(
       Object.entries(formData)
-        .filter(([key]) => validUpdateFields.includes(key))
+        .filter(([key]) => validupdateFields.includes(key))
         .map(([key, value]) => {
-          const numericFields = ['idPrograma', 'version', 'creditos', 'credMin', 'credMax'];
+          const numericFields = [ 'idPlan', 'creditos', 'asignaturas'];
           return [key, numericFields.includes(key) ? parseInt(value) : value];
         })
     );
 
     const { statusCode, errorMessage } = await updateRecord({
-      endpoint: ⁠ /planes/${selectedRowData.idPlan} ⁠,
-      data: filteredData,
+      endpoint: `/modulos/${selectedRowData.idModulo}`,
+      data: filterData,
     });
 
     if (statusCode === 200) {
+      const updateModulo = await fetchData();
+      const updated = updateModulo.find((p: any) => p.idModulo === selectedRowData.idModulo);
+      if (updated) setSelectedRowData(updated);
+
       setIsModalOpen(false);
-      await fetchPlanes();
+      setSelectedRow([]);
+      setSelectedRowData(null);
       setNoti({
         open: true,
         type: 'success',
-        message: '¡Plan de estudio actualizado con éxito!',
+        message: '¡Modulo actualizado con éxito!',
       });
     } else {
       setNoti({
         open: true,
         type: 'error',
-        message: errorMessage || 'Error al actualizar el plan',
+        message: errorMessage || 'Error al actualizar el modulo',
       });
     }
   };
-*/
+
   const memoizedInitialValues = useMemo(() => {
     if (!selectedRowData) return undefined;
     return Object.fromEntries(
@@ -167,36 +175,51 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
   }, [selectedRowData]);
 
   const handleButtonClick = async (actionType: string) => {
+    if (['Validar', 'Autorizar', 'Publicar', 'Cancelar'].includes(actionType)) {
+      setStatusToApply(actionType);
+      setIsStatusModalOpen(true);
+      return;
+    }
+
     setModalMode(actionType as any);
-    /*
-    if ((action === 'Actualizar' || action === 'Consultar') && selectedRow.length === 0) {
-          setNoti({
-            open: true,
-            type: 'warning',
-            message: 'Selecciona un plan para continuar.',
-          });
-          return;
-        }
-    */
+
+    if ((actionType === 'Actualizar' || actionType === 'Consultar') && selectedRow.length === 0) {
+      setNoti({
+        open: true,
+        type: 'warning',
+        message: 'Selecciona un modulo para continuar.',
+      });
+      return;
+    }
+
+    const { data: planesData } = await getData({ endpoint: '/planes' });
+    setPlanes(planesData);
     const { data: programasData } = await getData({ endpoint: '/programa/fa' });
     setProgramas(programasData);
 
     const unidadOptions = programasData.map((p: any) => p.idPlantel).filter(Boolean) as string[];
     setUnidadAcademicaOptions([...new Set(unidadOptions)]);
 
-    const { data: plantelData } = await getData({ endpoint: '/planes' });
-    setPlanes(plantelData);
-
     if (actionType === 'Agregar') {
       setSelectedRowData(null);
       setCarreraOptions([]);
       setPlanDeEstudioOptions([]);
     } else {
-      const plantel = selectedRowData?.unidadAcademica;
+      const plantel = selectedRowData?.idPlantel;
+      const carrera = Number(selectedRowData?.idPrograma);
       const carrerasFiltradas = programasData
         .filter((p: any) => p.idPlantel === plantel)
         .map((p: any) => ({ label: p.nombre, value: p.idPrograma }));
       setCarreraOptions(carrerasFiltradas);
+
+      const programasFiltrados = programasData
+        .filter((p: any) => p.idPrograma === carrera && p.idPlantel === unidadSelected )
+        .map((p:any) => p.idPrograma);
+      const planesFiltrados = planesData
+        .filter((plan: any) => programasFiltrados.includes(plan.idPrograma))
+        .map((plan: any) => ({ label: plan.clave, value: plan.idPlan }));
+
+      setPlanDeEstudioOptions(planesFiltrados);
     }
     setIsModalOpen(true);
   };
@@ -206,7 +229,7 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
     setUnidadSelected(idPlantel);
     const carrerasFiltradas = programas
       .filter((p) => p.idPlantel === idPlantel)
-      .map((p) => ({ label: p.nombre, value: p.idPrograma }));
+      .map((p) => ({ label: p.abreviatura, value: p.idPrograma }));
 
     setCarreraOptions(carrerasFiltradas);
   };
@@ -215,11 +238,37 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
     const programasFiltrados = programas
       .filter((p) => p.idPrograma === carreraSeleccionada && p.idPlantel === unidadSelected)
       .map((p) => p.idPrograma);
-    console.log(programasFiltrados);
     const planesFiltrados = planes
       .filter((plan) => programasFiltrados.includes(plan.idPrograma))
       .map((plan) => ({ label: plan.clave, value: plan.idPlan }));
+
     setPlanDeEstudioOptions(planesFiltrados);
+  };
+
+  const handleStatusSubmit = async () => {
+    const estadoMap: Record<string, string> = {
+      Validar: 'Validado',
+      Autorizar: 'Autorizado',
+      Publicar: 'Publicado',
+      Cancelar: 'Cancelado',
+    };
+
+    const nuevoEstado = estadoMap[statusToApply] || statusToApply;
+
+    const updates = selectedRow.map((id) =>
+      updateRecord({ endpoint: `/modulos/${id}`, data: { estado: nuevoEstado } })
+    );
+
+    await Promise.all(updates);
+    await fetchData();
+    setSelectedRow([]);
+    setSelectedRowData(null);
+    setNoti({
+      open: true,
+      type: 'success',
+      message: `¡Modulos ${nuevoEstado.toLowerCase()}s con éxito!`,
+    });
+    setIsStatusModalOpen(false);
   };
 
   const colDefs: GridColDef[] = [
@@ -230,8 +279,8 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
     { field: 'asignaturas', headerName: 'Asignaturas', sortable: true },
     { field: 'tipo', headerName: 'Tipo', sortable: true },
     { field: 'planDeEstudio', headerName: 'Plan de Estudio', sortable: true },
-    { field: 'carrera', headerName: 'Carrera', sortable: true },
-    { field: 'unidadAcademica', headerName: 'Unidad Académica', sortable: true },
+    { field: 'idProgramas', headerName: 'Carrera', sortable: true },
+    { field: 'idPlantel', headerName: 'Unidad Académica', sortable: true },
     { field: 'estado', headerName: 'Estado', sortable: true },
   ];
 
@@ -243,21 +292,21 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
     { name: 'asignaturas', label: 'Asignaturas', type: 'text' },
     { name: 'tipo', label: 'Tipo', type: 'select', options: ['Base', 'Especialidad'] },
     {
-      name: 'unidadAcademica',
+      name: 'idPlantel',
       label: 'Unidad Académica',
       type: 'select',
       options: unidadAcademicaOptions,
       onChange: handleUnidadAcademicaChange,
     },
     {
-      name: 'carrera',
+      name: 'idPrograma',
       label: 'Carrera',
       type: 'select',
       options: carreraOptions,
       onChange: handleCarreraChange,
     },
     {
-      name: 'planDeEstudio',
+      name: 'idPlan',
       label: 'Plan de estudios',
       type: 'select',
       options: planDeEstudioOptions,
@@ -265,20 +314,21 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
   ];
 
   return (
-    <div>
+    <>
       <ActionButtons
         tableType='modulos'
         selectedRowsCount={selectedRow.length}
         onButtonClick={handleButtonClick}
       />
-      <TableTemplate
+      <DataTable
         rowData={rowData}
         colDefs={colDefs}
         pageSize={20}
         loading={loading}
         enableSelection
         onSelectionChanged={handleSelectionChange}
-        getRowId={(row) => row.clave}
+        getRowId={(row) => row.idModulo}
+        rowSelectionModel={selectedRow}
       />
       <ModalAdd
         title={`${modalMode} Módulo`}
@@ -286,10 +336,17 @@ const handleUpdate = async (formData: { [key: string]: string }) => {
         onClose={() => setIsModalOpen(false)}
         fields={fieldsConfig}
         mode={modalMode}
-        initialValues={selectedRowData ?
-          Object.fromEntries(Object.entries(selectedRowData).map((
-            [key, value]) => [key, String(value)])) : undefined}
+        initialValues={memoizedInitialValues}
+        onSubmit={modalMode === 'Agregar'
+          ? handleCreate : modalMode === 'Actualizar' ? handleUpdate : undefined}
       />
-    </div>
+      <ModalStatus
+        open={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        selectedRows={rowData.filter((r) => selectedRow.includes(r.idModulo))}
+        nombreBoton={statusToApply as any}
+        onSubmit={handleStatusSubmit}
+      />
+    </>
   );
 }

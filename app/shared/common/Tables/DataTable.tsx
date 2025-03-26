@@ -5,19 +5,23 @@ import { DataGrid, GridColDef, GridRowSelectionModel, GridPaginationModel } from
 import { esES } from '@mui/x-data-grid/locales';
 import { CircularProgress } from '@mui/material';
 
-interface TableTemplateProps {
+interface DataTableProps {
   rowData: any[];
   colDefs: GridColDef[];
   pageSize?: number;
   loading?: boolean;
   enableSelection?: boolean;
+  // eslint-disable-next-line no-unused-vars
   isRowSelectable?: (params: any) => boolean;
+  // eslint-disable-next-line no-unused-vars
   onSelectionChanged?: (selectionModel: GridRowSelectionModel) => void;
   height?: number;
+  // eslint-disable-next-line no-unused-vars
   getRowId?: (row: any) => string | number;
+  rowSelectionModel?: GridRowSelectionModel;
 }
 
-export default function TableTemplate({
+export default function DataTable({
   rowData,
   colDefs,
   pageSize = 20,
@@ -27,18 +31,15 @@ export default function TableTemplate({
   onSelectionChanged,
   height = 635,
   getRowId,
-}: TableTemplateProps) {
-  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>([]);
+  rowSelectionModel,
+}: DataTableProps) {
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize,
   });
 
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedRows(selection);
-    if (onSelectionChanged) {
-      onSelectionChanged(selection);
-    }
+    onSelectionChanged?.(selection);
   };
 
   if (loading) {
@@ -64,7 +65,7 @@ export default function TableTemplate({
         pageSizeOptions={[10, 20, 50, 100]}
         checkboxSelection={enableSelection}
         disableRowSelectionOnClick
-        rowSelectionModel={selectedRows}
+        rowSelectionModel={rowSelectionModel}
         onRowSelectionModelChange={enableSelection ? handleSelectionChange : undefined}
         isRowSelectable={isRowSelectable}
         getRowId={getRowId}
