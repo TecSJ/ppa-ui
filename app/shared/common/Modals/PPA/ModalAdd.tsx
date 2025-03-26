@@ -2,10 +2,12 @@
 
 import { ChangeEvent, ReactNode, FormEvent, useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
-import { Button, TextField } from '@mui/material';
+import { Button } from '@mui/material';
 import { Add, Close, Edit } from '@mui/icons-material';
 import { DefaultModal } from '../';
 import { InputField, SelectField } from '../../Form';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 
 interface FieldProps {
   name: string;
@@ -160,17 +162,28 @@ export default function ModalAdd({
                   />
                 )}
                 {type === 'date' && (
-                  <TextField
-                    fullWidth
-                    type='date'
-                    name={name}
+                  <DatePicker
                     label={label}
-                    value={formData[name] || ''}
-                    onChange={handleChange}
-                    InputLabelProps={{ shrink: true }}
-                    error={!!errors[name]}
-                    helperText={errors[name]}
-                    disabled={mode === 'Consultar'}
+                    value={formData[name] ? dayjs(formData[name]) : null}
+                    onChange={(newValue) => {
+                      const valueStr = newValue?.format('YYYY-MM-DD') || '';
+                      setFormData((prev) => ({ ...prev, [name]: valueStr }));
+                      if (valueStr) {
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors[name];
+                          return newErrors;
+                        });
+                      }
+                    }}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors[name],
+                        helperText: errors[name],
+                        disabled: mode === 'Consultar',
+                      },
+                    }}
                   />
                 )}
               </Grid>
