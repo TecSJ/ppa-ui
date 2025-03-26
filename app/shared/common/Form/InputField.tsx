@@ -1,5 +1,5 @@
-import { TextField } from '@mui/material';
-import { ChangeEvent } from 'react';
+import { TextField, InputAdornment } from '@mui/material';
+import { ChangeEvent, ReactNode } from 'react';
 
 interface InputFieldProps {
   label: string;
@@ -12,6 +12,7 @@ interface InputFieldProps {
   fullWidth?: boolean;
   disabled?: boolean;
   size?: 'small' | 'medium';
+  icon?: ReactNode;
 }
 
 export default function InputField({
@@ -24,6 +25,7 @@ export default function InputField({
   fullWidth = true,
   disabled = false,
   size = 'medium',
+  icon,
 }: InputFieldProps) {
   return (
     <TextField
@@ -37,6 +39,15 @@ export default function InputField({
       helperText={error ? helperText : ''}
       disabled={disabled}
       size={size}
+      slotProps={{
+        input: {
+          endAdornment: icon ? (
+            <InputAdornment position='end'>
+              {icon}
+            </InputAdornment>
+          ) : undefined,
+        },
+      }}
     />
   );
 }

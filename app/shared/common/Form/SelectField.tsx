@@ -1,10 +1,7 @@
 import {
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-  FormHelperText,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 
 interface SelectFieldProps {
@@ -13,7 +10,7 @@ interface SelectFieldProps {
   value: string;
   options: (string | { label: string; value: string })[];
   // eslint-disable-next-line no-unused-vars
-  onChange: (e: SelectChangeEvent<string>) => void;
+  onChange: (name: string, value: string) => void;
   error?: boolean;
   helperText?: string;
   fullWidth?: boolean;
@@ -33,21 +30,40 @@ export default function SelectField({
   disabled = false,
   size = 'medium',
 }: SelectFieldProps) {
+  const normalizedOptions = options.map((option) =>
+    typeof option === 'string' ? { label: option, value: option } : {
+      label: option.label,
+      value: String(option.value),
+    }
+  );
+
+  const currentValue = normalizedOptions.find(
+    (option) => option.value === String(value)
+  ) || null;
+
   return (
-    <FormControl fullWidth={fullWidth} variant='outlined' error={error} size={size}>
-      <InputLabel>{label}</InputLabel>
-      <Select name={name} value={value} onChange={onChange} label={label} disabled={disabled}>
-        {options.map((option) => {
-          const optionValue = typeof option === 'string' ? option : option.value;
-          const optionLabel = typeof option === 'string' ? option : option.label;
-          return (
-            <MenuItem key={optionValue} value={optionValue}>
-              {optionLabel}
-            </MenuItem>
-          );
-        })}
-      </Select>
-      {error && <FormHelperText>{helperText}</FormHelperText>}
+    <FormControl fullWidth={fullWidth} error={error}>
+      <Autocomplete
+        id={name}
+        options={normalizedOptions}
+        getOptionLabel={(option) => option.label}
+        value={currentValue}
+        isOptionEqualToValue={(option, val) => option.value === val?.value}
+        onChange={(_, newValue) => {
+          const newVal = newValue?.value || '';
+          onChange(name, newVal);
+        }}
+        disabled={disabled}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            error={error}
+            size={size}
+            helperText={helperText}
+          />
+        )}
+      />
     </FormControl>
   );
 }
