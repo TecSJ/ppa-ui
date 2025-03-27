@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useState, useEffect } from 'react';
+import { ChangeEvent, ReactNode, FormEvent, useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import { Button, TextField } from '@mui/material';
 import { Add, Close, Edit } from '@mui/icons-material';
@@ -15,6 +15,14 @@ interface FieldProps {
   size?: number;
   // eslint-disable-next-line no-unused-vars
   onChange?: (value: string) => void;
+  icon?: ReactNode;
+  validation?: {
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    pattern?: RegExp;
+    errorMessage?: string;
+  };
 }
 
 interface ModalAgregarProps {
@@ -81,14 +89,39 @@ export default function ModalAdd({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (mode === 'Consultar') return;
+
     const validationErrors: { [key: string]: string } = {};
-    fields.forEach(({ name }) => {
-      if (!formData[name]) validationErrors[name] = 'Campo obligatorio.';
+
+    fields.forEach(({ name, validation }) => {
+      const value = formData[name] || '';
+
+      if (validation?.required && !value) {
+        validationErrors[name] = validation.errorMessage || 'Este campo es obligatorio.';
+        return;
+      }
+
+      if (validation?.minLength && value.length < validation.minLength) {
+        validationErrors[name] = validation.errorMessage
+        || `Debe tener al menos ${validation.minLength} caracteres.`;
+        return;
+      }
+
+      if (validation?.maxLength && value.length > validation.maxLength) {
+        validationErrors[name] = validation.errorMessage
+        || `Debe tener como máximo ${validation.maxLength} caracteres.`;
+        return;
+      }
+
+      if (validation?.pattern && !validation.pattern.test(value)) {
+        validationErrors[name] = validation.errorMessage || 'Formato inválido.';
+      }
     });
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+
     if (onSubmit) {
       onSubmit(formData);
     }
@@ -98,7 +131,7 @@ export default function ModalAdd({
     <DefaultModal open={open} onClose={handleClose} title={title}>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
-          {fields.map(({ name, label, type, options, size }) => {
+          {fields.map(({ name, label, type, options, size, icon }) => {
             const col = size === 1 ? 12 : size === 3 ? 4 : 6;
             return (
               <Grid key={name} size={{ xs: 12, md: col }}>
@@ -111,6 +144,7 @@ export default function ModalAdd({
                     error={!!errors[name]}
                     helperText={errors[name]}
                     disabled={mode === 'Consultar'}
+                    icon={icon}
                   />
                 )}
                 {type === 'select' && (
@@ -119,7 +153,7 @@ export default function ModalAdd({
                     name={name}
                     value={formData[name] || ''}
                     options={options || []}
-                    onChange={(e) => handleSelectChange(name, e.target.value)}
+                    onChange={handleSelectChange}
                     helperText={errors[name]}
                     error={!!errors[name]}
                     disabled={mode === 'Consultar'}

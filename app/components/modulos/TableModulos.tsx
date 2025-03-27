@@ -206,19 +206,21 @@ export default function TableModulos() {
       setPlanDeEstudioOptions([]);
     } else {
       const plantel = selectedRowData?.idPlantel;
-      const carrera = Number(selectedRowData?.idPrograma);
+      const carrera = selectedRowData?.idPrograma;
+      setUnidadSelected(plantel || '');
       const carrerasFiltradas = programasData
         .filter((p: any) => p.idPlantel === plantel)
         .map((p: any) => ({ label: p.nombre, value: p.idPrograma }));
-      setCarreraOptions(carrerasFiltradas);
 
       const programasFiltrados = programasData
-        .filter((p: any) => p.idPrograma === carrera && p.idPlantel === unidadSelected )
-        .map((p:any) => p.idPrograma);
+        .filter((p: any) => p.idPrograma === Number(
+          carrera) && p.idPlantel === plantel)
+        .map((p: any) => p.idPrograma);
       const planesFiltrados = planesData
         .filter((plan: any) => programasFiltrados.includes(plan.idPrograma))
         .map((plan: any) => ({ label: plan.clave, value: plan.idPlan }));
 
+      setCarreraOptions(carrerasFiltradas);
       setPlanDeEstudioOptions(planesFiltrados);
     }
     setIsModalOpen(true);
@@ -236,7 +238,7 @@ export default function TableModulos() {
 
   const handleCarreraChange = (carreraSeleccionada: string) => {
     const programasFiltrados = programas
-      .filter((p) => p.idPrograma === carreraSeleccionada && p.idPlantel === unidadSelected)
+      .filter((p) => p.idPrograma === Number(carreraSeleccionada) && p.idPlantel === unidadSelected)
       .map((p) => p.idPrograma);
     const planesFiltrados = planes
       .filter((plan) => programasFiltrados.includes(plan.idPrograma))
@@ -272,16 +274,17 @@ export default function TableModulos() {
   };
 
   const colDefs: GridColDef[] = [
-    { field: 'clave', headerName: 'Clave', sortable: true },
+    { field: 'clave', headerName: 'Clave', sortable: true, cellClassName: 'Visible' },
     { field: 'abreviatura', headerName: 'Abreviatura', sortable: true },
-    { field: 'nombre', headerName: 'Nombre', sortable: true },
+    { field: 'nombre', headerName: 'Nombre', sortable: true, cellClassName: 'Visible' },
     { field: 'creditos', headerName: 'Créditos', sortable: true },
     { field: 'asignaturas', headerName: 'Asignaturas', sortable: true },
     { field: 'tipo', headerName: 'Tipo', sortable: true },
-    { field: 'planDeEstudio', headerName: 'Plan de Estudio', sortable: true },
-    { field: 'idProgramas', headerName: 'Carrera', sortable: true },
+    { field: 'planDeEstudio', headerName: 'Plan de Estudio', sortable: true,
+      cellClassName: 'Visible' },
+    { field: 'idProgramas', headerName: 'Carrera', sortable: true, cellClassName: 'Visible' },
     { field: 'idPlantel', headerName: 'Unidad Académica', sortable: true },
-    { field: 'estado', headerName: 'Estado', sortable: true },
+    { field: 'estado', headerName: 'Estado', sortable: true, cellClassName: 'Visible' },
   ];
 
   const fieldsConfig: FieldProps[] = [
@@ -342,6 +345,7 @@ export default function TableModulos() {
       />
       <ModalStatus
         open={isStatusModalOpen}
+        colDefs={colDefs}
         onClose={() => setIsStatusModalOpen(false)}
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idModulo))}
         nombreBoton={statusToApply as any}

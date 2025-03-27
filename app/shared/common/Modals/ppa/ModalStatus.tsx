@@ -13,6 +13,7 @@ interface ModalStatusProps {
   selectedRows: any[];
   nombreBoton: 'Validado' | 'Autorizado' | 'Publicado' | 'Cancelado';
   onSubmit: () => Promise<void>;
+  colDefs: any;
 }
 
 export default function ModalStatus({
@@ -21,16 +22,11 @@ export default function ModalStatus({
   selectedRows,
   nombreBoton,
   onSubmit,
+  colDefs,
 }: ModalStatusProps) {
   const [loading, setLoading] = useState(false);
 
-  const colDefs = [
-    { field: 'clave', headerName: 'Clave' },
-    { field: 'version', headerName: 'Versión' },
-    { field: 'fechaInicio', headerName: 'Inicio' },
-    { field: 'fechaTermino', headerName: 'Término' },
-    { field: 'estado', headerName: 'Estado Actual' },
-  ];
+  const filteredColDefs = colDefs.filter((col: any) => col.cellClassName === 'Visible');
 
   const handleClick = async () => {
     setLoading(true);
@@ -42,11 +38,11 @@ export default function ModalStatus({
     <DefaultModal
       open={open}
       onClose={onClose}
-      title={`¿Deseas ${nombreBoton.toLowerCase()} estos planes?`}
+      title={`¿Deseas ${nombreBoton.toLowerCase()} estos elementos?`}
     >
       <DataTable
         rowData={selectedRows}
-        colDefs={colDefs}
+        colDefs={filteredColDefs}
         height={300}
         getRowId={(row) => row.idPlan}
       />
