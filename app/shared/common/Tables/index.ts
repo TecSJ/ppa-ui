@@ -1,1 +1,1 @@
-export { default as TableTemplate } from './TableTemplate';
+export { default as DataTable } from './DataTable';

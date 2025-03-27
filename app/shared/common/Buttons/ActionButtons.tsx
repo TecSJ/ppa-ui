@@ -8,12 +8,12 @@ import {
   Close,
   PersonOutline,
   GroupsOutlined,
-  BookmarkBorder,
+  // BookmarkBorder,
   SellOutlined,
 } from '@mui/icons-material';
 import { madaniArabicRegular } from '@/public/assets/fonts';
-import { usePermissions } from '@/app/context/PermissionsContext';
-import { usePathname } from 'next/navigation';
+// import { usePermissions } from '@/app/context/PermissionsContext';
+// import { usePathname } from 'next/navigation';
 
 interface ActionButtonsProps {
   tableType: 'aplicaciones' | 'credenciales' | 'grupos' | 'modulos' | 'roles';
@@ -22,29 +22,37 @@ interface ActionButtonsProps {
   onButtonClick: (actionType: string) => void;
 }
 
-interface Actions {
-  agregar?: number;
-  consultar?: number;
-  editar?: number;
-  cancelar?: number;
-  subir?: number;
-}
+type Action = {
+  label: string;
+  icon: React.ReactNode;
+  show: boolean;
+  disabled: boolean;
+};
 
 export default function ActionButtons({
-  tableType,
+  // tableType,
   selectedRowsCount,
   onButtonClick,
 }: ActionButtonsProps) {
-  const { permissions } = usePermissions();
-  const pathname = usePathname();
+  // const { permissions } = usePermissions();
+  // const pathname = usePathname();
 
-  const moduleName = pathname.split('/').filter(Boolean)[1] || '';
+  // const moduleName = pathname.split('/').filter(Boolean)[1] || '';
+  // const modulePermissions = permissions
+  //   .flatMap((app) => app.modulos)
+  //   .find((mod) => mod.moduloClave?.toLowerCase() === moduleName?.toLowerCase());
 
-  const modulePermissions = permissions
-    .flatMap((app) => app.modulos)
-    .find((mod) => mod.moduloClave?.toLowerCase() === moduleName?.toLowerCase());
-
-  const allowedActions: Actions = modulePermissions?.acciones ?? {};
+  //const allowedActions: Record<string, number> = modulePermissions?.acciones ?? {};
+  const allowedActions: Record<string, number> = {
+    agregar: 1,
+    consultar: 1,
+    editar: 1,
+    cancelar: 1,
+    perfil: 1,
+    grupos: 1,
+    etiquetas: 1,
+    permisos: 1,
+  };
 
   const customButtonStyles = {
     borderRadius: '20px',
@@ -61,64 +69,50 @@ export default function ActionButtons({
   const isSingleSelection = selectedRowsCount === 1;
   const notSelection = selectedRowsCount === 0;
 
-  const buttonsConfig = [
-    {
-      id: 'agregar',
+  const buttonsConfig: Record<string, Action> = {
+    agregar: {
       label: 'Agregar',
       icon: <Add />,
-      disabled: isMultipleSelection || isSingleSelection,
       show: allowedActions.agregar === 1,
+      disabled: isMultipleSelection || isSingleSelection,
     },
-    {
-      id: 'consultar',
+    consultar: {
       label: 'Consultar',
       icon: <Search />,
-      disabled: isMultipleSelection || notSelection,
       show: allowedActions.consultar === 1,
-    },
-    {
-      id: 'editar',
-      label: 'Editar',
-      icon: <EditOutlined />,
       disabled: isMultipleSelection || notSelection,
-      show: allowedActions.editar === 1,
     },
-    {
-      id: 'cancelar',
+    editar: {
+      label: 'Actualizar',
+      icon: <EditOutlined />,
+      show: allowedActions.editar === 1,
+      disabled: isMultipleSelection || notSelection,
+    },
+    perfil: {
+      label: 'Validar',
+      icon: <PersonOutline />,
+      show: allowedActions.editar === 1,
+      disabled: notSelection,
+    },
+    grupos: {
+      label: 'Autorizar',
+      icon: <GroupsOutlined />,
+      show: allowedActions.editar === 1,
+      disabled: notSelection,
+    },
+    etiquetas: {
+      label: 'Publicar',
+      icon: <SellOutlined />,
+      show: allowedActions.editar === 1,
+      disabled: notSelection,
+    },
+    cancelar: {
       label: 'Cancelar',
       icon: <Close />,
-      disabled: notSelection,
       show: allowedActions.cancelar === 1,
+      disabled: notSelection,
     },
-    {
-      id: 'perfil',
-      label: 'Perfil',
-      icon: <PersonOutline />,
-      disabled: isMultipleSelection || notSelection,
-      show: tableType === 'credenciales',
-    },
-    {
-      id: 'grupos',
-      label: 'Grupos',
-      icon: <GroupsOutlined />,
-      disabled: isMultipleSelection || notSelection,
-      show: tableType === 'credenciales',
-    },
-    {
-      id: 'etiquetas',
-      label: 'Etiquetas',
-      icon: <SellOutlined />,
-      disabled: isMultipleSelection || notSelection,
-      show: tableType === 'credenciales',
-    },
-    {
-      id: 'permisos',
-      label: 'Permisos',
-      icon: <BookmarkBorder />,
-      disabled: isMultipleSelection || notSelection,
-      show: tableType === 'roles',
-    },
-  ];
+  };
 
   return (
     <Box
@@ -129,21 +123,24 @@ export default function ActionButtons({
         marginBottom: 2,
       }}
     >
-      {buttonsConfig.map(
-        (button) => button.show && (
-          <Button
-            key={button.id}
-            variant='outlined'
-            startIcon={button.icon}
-            sx={customButtonStyles}
-            className={madaniArabicRegular.className}
-            onClick={() => onButtonClick(button.label)}
-            disabled={button.disabled}
-          >
-            {button.label}
-          </Button>
-        ),
-      )}
+      {Object.keys(buttonsConfig).map((key) => {
+        const button = buttonsConfig[key];
+        return (
+          button.show && (
+            <Button
+              key={key}
+              variant='outlined'
+              startIcon={button.icon}
+              sx={customButtonStyles}
+              className={madaniArabicRegular.className}
+              onClick={() => onButtonClick(button.label)}
+              disabled={button.disabled}
+            >
+              {button.label}
+            </Button>
+          )
+        );
+      })}
     </Box>
   );
 }
