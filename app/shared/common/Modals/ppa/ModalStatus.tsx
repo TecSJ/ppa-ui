@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import { Close, Edit } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { DataTable } from '../../Tables';
-import { DefaultModal } from '..';
+import { DefaultModal } from '../';
 
 interface ModalStatusProps {
   open: boolean;
