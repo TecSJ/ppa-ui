@@ -4,7 +4,7 @@ import { ChangeEvent, ReactNode, FormEvent, useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import { Button } from '@mui/material';
 import { Add, Close, Edit } from '@mui/icons-material';
-import { DefaultModal } from '../';
+import { DefaultModal } from '..';
 import { InputField, SelectField } from '../../Form';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
