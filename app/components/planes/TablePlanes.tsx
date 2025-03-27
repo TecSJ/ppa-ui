@@ -246,15 +246,15 @@ export default function TablePlanes() {
   };
 
   const colDefs: GridColDef[] = [
-    { field: 'clave', headerName: 'Clave', sortable: true },
-    { field: 'version', headerName: 'Versión', sortable: true },
+    { field: 'clave', headerName: 'Clave', sortable: true, cellClassName: 'Visible' },
+    { field: 'version', headerName: 'Versión', sortable: true, cellClassName: 'Visible' },
     { field: 'fechaInicio', headerName: 'Fecha Inicio', sortable: true },
     { field: 'fechaTermino', headerName: 'Fecha Término', sortable: true },
     { field: 'creditos', headerName: 'Créditos', sortable: true },
     { field: 'credMin', headerName: 'Créditos Min', sortable: true },
     { field: 'credMax', headerName: 'Créditos Max', sortable: true },
-    { field: 'idPlantel', headerName: 'UA', sortable: true },
-    { field: 'estado', headerName: 'Estado', sortable: true },
+    { field: 'idPlantel', headerName: 'UA', sortable: true, cellClassName: 'Visible' },
+    { field: 'estado', headerName: 'Estado', sortable: true, cellClassName: 'Visible' },
   ];
 
   const fields: FieldProps[] = [
@@ -390,6 +390,7 @@ export default function TablePlanes() {
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idPlan))}
         nombreBoton={statusToApply as any}
         onSubmit={handleStatusSubmit}
+        colDefs={colDefs}
       />
     </>
   );
