@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import getToken from './getToken';
+// import getToken from './getToken';
 
 const ERROR_MAPPING: { [key: number]: { statusCode: number, errorMessage: string } } = {
   400: { statusCode: 400, errorMessage: '¡Revisa que los campos sean correctos!' },
@@ -20,7 +20,7 @@ const makeCall = async ({
   data,
   query,
 }: MakeCallParams) => {
-  const tokenData = getToken();
+  // const tokenData = getToken();
 
   /*if (!tokenData || !tokenData.token) {
     return {

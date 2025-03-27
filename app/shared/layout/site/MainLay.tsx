@@ -15,10 +15,13 @@ export default function MainLay({ children }: MainLayoutProps) {
 
   const hideSidebar = (
     pathname === '/'
+    || pathname === '/planes'
     || pathname === '/panel'
     || pathname === '/data'
     || pathname === '/sso'
   );
+
+  console.log(pathname);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', textTransform: 'none' }}>

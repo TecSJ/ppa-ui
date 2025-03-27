@@ -8,12 +8,12 @@ import {
   Close,
   PersonOutline,
   GroupsOutlined,
-  BookmarkBorder,
+  // BookmarkBorder,
   SellOutlined,
 } from '@mui/icons-material';
 import { madaniArabicRegular } from '@/public/assets/fonts';
-import { usePermissions } from '@/app/context/PermissionsContext';
-import { usePathname } from 'next/navigation';
+// import { usePermissions } from '@/app/context/PermissionsContext';
+// import { usePathname } from 'next/navigation';
 
 interface ActionButtonsProps {
   tableType: 'aplicaciones' | 'credenciales' | 'grupos' | 'modulos' | 'roles';
@@ -29,17 +29,17 @@ type Action = {
 };
 
 export default function ActionButtons({
-  tableType,
+  // tableType,
   selectedRowsCount,
   onButtonClick,
 }: ActionButtonsProps) {
-  const { permissions } = usePermissions();
-  const pathname = usePathname();
+  // const { permissions } = usePermissions();
+  // const pathname = usePathname();
 
-  const moduleName = pathname.split('/').filter(Boolean)[1] || '';
-  const modulePermissions = permissions
-    .flatMap((app) => app.modulos)
-    .find((mod) => mod.moduloClave?.toLowerCase() === moduleName?.toLowerCase());
+  // const moduleName = pathname.split('/').filter(Boolean)[1] || '';
+  // const modulePermissions = permissions
+  //   .flatMap((app) => app.modulos)
+  //   .find((mod) => mod.moduloClave?.toLowerCase() === moduleName?.toLowerCase());
 
   //const allowedActions: Record<string, number> = modulePermissions?.acciones ?? {};
   const allowedActions: Record<string, number> = {
