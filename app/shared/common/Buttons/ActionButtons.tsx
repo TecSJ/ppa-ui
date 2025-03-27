@@ -18,7 +18,6 @@ import { madaniArabicRegular } from '@/public/assets/fonts';
 interface ActionButtonsProps {
   tableType: 'aplicaciones' | 'credenciales' | 'grupos' | 'modulos' | 'roles';
   selectedRowsCount: number;
-  // eslint-disable-next-line no-unused-vars
   onButtonClick: (actionType: string) => void;
 }
 
