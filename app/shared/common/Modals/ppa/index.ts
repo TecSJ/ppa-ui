@@ -1,0 +1,1 @@
+export { default as modaladd } from './modaladd';
