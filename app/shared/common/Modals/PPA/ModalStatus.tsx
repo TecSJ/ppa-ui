@@ -44,7 +44,7 @@ export default function ModalStatus({
         rowData={selectedRows}
         colDefs={filteredColDefs}
         height={300}
-        getRowId={(row) => row.idPrograma}
+        getRowId={(row) => row.idPlan}
       />
 
       <Grid container justifyContent='flex-end' spacing={2} sx={{ mt: 3 }}>

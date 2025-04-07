@@ -1,2 +1,2 @@
 export { default as DefaultModal } from './DefaultModal';
-export * from './ppa';
+export * from './PPA';
