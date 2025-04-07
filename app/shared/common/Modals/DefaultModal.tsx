@@ -67,4 +67,3 @@ export default function DefaultModal({ open, onClose, title, children }: Default
     </Modal>
   );
 }
-

@@ -16,7 +16,7 @@ import { madaniArabicRegular } from '@/public/assets/fonts';
 // import { usePathname } from 'next/navigation';
 
 interface ActionButtonsProps {
-  tableType: 'aplicaciones' | 'credenciales' | 'grupos' | 'modulos' | 'roles';
+  tableType: 'aplicaciones' | 'credenciales' | 'grupos' | 'modulos' | 'programas';
   selectedRowsCount: number;
   onButtonClick: (actionType: string) => void;
 }
