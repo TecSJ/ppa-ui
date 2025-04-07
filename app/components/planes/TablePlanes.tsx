@@ -391,6 +391,7 @@ export default function TablePlanes() {
         nombreBoton={statusToApply as any}
         onSubmit={handleStatusSubmit}
         colDefs={colDefs}
+        getRowId={(row: any) => row.idPlan}
       />
     </>
   );
