@@ -349,6 +349,7 @@ export default function TableModulos() {
         onClose={() => setIsStatusModalOpen(false)}
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idModulo))}
         nombreBoton={statusToApply as any}
+        getRowId={(row: any) => row.idModulo}
         onSubmit={handleStatusSubmit}
       />
     </>

@@ -390,6 +390,7 @@ export default function TablePlanes() {
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idPlan))}
         nombreBoton={statusToApply as any}
         onSubmit={handleStatusSubmit}
+        getRowId={(row: any) => row.idPlan}
         colDefs={colDefs}
       />
     </>
