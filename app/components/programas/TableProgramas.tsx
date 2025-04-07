@@ -39,7 +39,7 @@ export default function TableProgramas() {
   const [selectedRow, setSelectedRow] = useState<GridRowSelectionModel>([]);
   const [selectedRowData, setSelectedRowData] = useState<ProgramaData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Editar'>('Agregar');
+  const [modalMode, setModalMode] = useState<'Agregar' | 'Consultar' | 'Actualizar'>('Agregar');
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [statusToApply, setStatusToApply] = useState('');
 

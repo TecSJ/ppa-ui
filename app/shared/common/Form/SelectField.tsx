@@ -4,19 +4,19 @@ import {
   TextField,
 } from '@mui/material';
 
-interface SelectFieldProps {
-  label: string;
-  name: string;
-  value: string;
-  options: (string | { label: string; value: string })[];
-  // eslint-disable-next-line no-unused-vars
-  onChange: (name: string, value: string) => void;
-  error?: boolean;
-  helperText?: string;
-  fullWidth?: boolean;
-  disabled?: boolean;
-  size?: 'small' | 'medium';
-}
+  interface SelectFieldProps {
+    label: string;
+    name: string;
+    value: string;
+    options: (string | { label: string; value: string })[];
+    // eslint-disable-next-line no-unused-vars
+    onChange: (name: string, value: string) => void;
+    error?: boolean;
+    helperText?: string;
+    fullWidth?: boolean;
+    disabled?: boolean;
+    size?: 'small' | 'medium';
+  }
 
 export default function SelectField({
   label,
