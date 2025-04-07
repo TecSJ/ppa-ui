@@ -14,8 +14,6 @@ interface ModalStatusProps {
   nombreBoton: 'Validado' | 'Autorizado' | 'Publicado' | 'Cancelado';
   onSubmit: () => Promise<void>;
   colDefs: any;
-  // eslint-disable-next-line no-unused-vars
-  getRowId: (row: any) => string | number;
 }
 
 export default function ModalStatus({
@@ -25,7 +23,6 @@ export default function ModalStatus({
   nombreBoton,
   onSubmit,
   colDefs,
-  getRowId,
 }: ModalStatusProps) {
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +44,7 @@ export default function ModalStatus({
         rowData={selectedRows}
         colDefs={filteredColDefs}
         height={300}
-        getRowId={(row) => getRowId(row)}
+        getRowId={(row) => row.idPlan}
       />
 
       <Grid container justifyContent='flex-end' spacing={2} sx={{ mt: 3 }}>

@@ -350,7 +350,6 @@ export default function TableModulos() {
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idModulo))}
         nombreBoton={statusToApply as any}
         onSubmit={handleStatusSubmit}
-        getRowId={(row: any) => row.idModulo}
       />
     </>
   );
