@@ -5,8 +5,8 @@ import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import {getData, createRecord, updateRecord} from '@/app/shared/utils/apiUtils';
 import { DataTable, ActionButtons } from '@/app/shared/common';
 import { useAuthContext } from '@/app/context/AuthContext';
-import ModalAdd from '@/app/shared/common/Modals/ppa/modaladd';
-import ModalStatus from '@/app/shared/common/Modals/ppa/ModalStatus';
+import ModalAdd from '@/app/shared/common/Modals/PPA/ModalAdd';
+import ModalStatus from '@/app/shared/common/Modals/PPA/ModalStatus';
 
 interface ProgramaData {
     idPrograma: number,
@@ -267,6 +267,7 @@ export default function TableProgramas() {
         selectedRows={rowData.filter((r) => selectedRow.includes(r.idPrograma))}
         nombreBoton={statusToApply as any}
         onSubmit={handleStatusSubmit}
+        getRowId={(row: any) => row.idPrograma}
         colDefs={colDefs}
       />
     </div>
